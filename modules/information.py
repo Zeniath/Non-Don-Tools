@@ -85,7 +85,7 @@ class Information:
         else:
             p = 'non '
 
-        e = discord.Embed(title="About the bot", description="[Support Server](https://discord.gg/g7qJU8H) | [Invite The Bot](https://discordapp.com/api/oauth2/authorize?client_id=448038812048949253&permissions=8&scope=bot) | [Upvote](https://discordbots.org/bot/448038812048949253)", color=discord.Colour.blue())
+        e = discord.Embed(title="About the bot", description="[Support Server](https://discord.gg/g7qJU8H) | [Invite The Bot](https://discordapp.com/api/oauth2/authorize?client_id=448038812048949253&permissions=8&scope=bot) | [Upvote](https://discordbots.org/bot/448038812048949253) | [Source](https://github.com/Zeniath/Non-Don-Tools)", color=discord.Colour.blue())
         e.set_author(name="Non Dons Information", icon_url="https://cdn.discordapp.com/avatars/448038812048949253/03ceac8c243b9ded4287049b59aa987b.webp?size=1024")
         e.add_field(name="Coder:", value="Zeniath#4729", inline=True)
         e.add_field(name="Python Version:", value=f"{python_version()}", inline=True)
@@ -126,7 +126,7 @@ class Information:
         value = await self.bot.db.fetchrow("SELECT commandcount FROM commands;")
         v = value['commandcount']
 
-        e = discord.Embed(description="[Support Server](https://discord.gg/g7qJU8H) | [Invite The Bot](https://discordapp.com/api/oauth2/authorize?client_id=448038812048949253&permissions=8&scope=bot) | [Upvote](https://discordbots.org/bot/448038812048949253)", color=discord.Color.dark_blue())
+        e = discord.Embed(description="[Support Server](https://discord.gg/g7qJU8H) | [Invite The Bot](https://discordapp.com/api/oauth2/authorize?client_id=448038812048949253&permissions=8&scope=bot) | [Upvote](https://discordbots.org/bot/448038812048949253) | [Source](https://github.com/Zeniath/Non-Don-Tools)", color=discord.Color.dark_blue())
         e.set_author(name="Non Don Stats", icon_url="https://cdn.discordapp.com/avatars/448038812048949253/03ceac8c243b9ded4287049b59aa987b.webp?size=1024")
         e.add_field(name="Member Stats", value=f"<:online:482652775214481409>{online}" 
                                                 f"<:away:482652813936295937>{away}" 
