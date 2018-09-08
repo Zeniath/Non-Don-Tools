@@ -284,12 +284,7 @@ class Economy:
             e.add_field(name="Error <:no:473312284148498442>", value=f"<@{user.id}> does not have enough money for you to rob them for **${amount}**. They only have **${user_money}**")
             await ctx.send(embed=e)
             return
-        elif amount > money:
-            self.bot.get_command("rob").reset_cooldown(ctx)
-            e = discord.Embed(color=16720640)
-            e.add_field(name="Error <:no:473312284148498442>", value=f"<@{user.id}> does not have enough money for you to rob them for **${amount}**. They only have **${user_money}**")
-            await ctx.send(embed=e)
-            return
+
 
         elif rob < 60:
             await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", amount)
@@ -438,7 +433,7 @@ class Economy:
         flowers = random.choice(['Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'Rainbow'])
         hotflowers = random.choice(['Red', 'Yellow', 'Orange'])
         coldflowers = random.choice(['Blue', 'Pastel', 'Purple'])
-        winflowers = random.choice(['Rainbow'])
+        userchoice = random.choice(['hot', 'cold'])
 
         money = data['balance']
 
@@ -465,10 +460,6 @@ class Economy:
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/d/d6/Blue_flowers_detail.png/revision/latest?cb=20160918221426"
             flowercolour = 0x0042F3
 
-        elif flowers == 'Rainbow':
-            flowerurl = "https://cdn.discordapp.com/attachments/381963689470984203/481206038125740042/kriXGoogle.png"
-            flowercolour = 0x00F3BF
-
         elif flowers == 'Yellow':
             flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481207196227469333/kriXGoogle.png'
             flowercolour = 0xE9F40B
@@ -481,7 +472,7 @@ class Economy:
             flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481206682437943326/kriXGoogle.png'
             flowercolour = 0x9663F5
 
-        if flower == hotflowers:
+        if flowers == userchoice:
             await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
@@ -497,7 +488,7 @@ class Economy:
             e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
-        if flower == coldflowers:
+        if flowers != userchoice:
             await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
@@ -513,6 +504,7 @@ class Economy:
             e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
+
 
 def setup(bot):
     bot.add_cog(Economy(bot))

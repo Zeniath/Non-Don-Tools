@@ -458,7 +458,7 @@ class HelpPaginator(Pages):
         """shows this message"""
 
         self.embed.title = 'Paginator Help'
-        self.embed.description = 'Hey! Welcome this help page.'
+        self.embed.description = 'Hey! Welcome to the Help Page!'
 
         messages = [f'{emoji} {func.__doc__}' for emoji, func in self.reaction_emojis]
         self.embed.clear_fields()
@@ -484,7 +484,7 @@ class HelpPaginator(Pages):
             ('<argument>', 'This means that the argument is **required**.'),
             ('[argument]', 'This means that the argument is **optional**.'),
             ('[A|B]', 'This means that it can be **either A or B**.'),
-            ('[argument...]', 'This means you can have multiple arguments.')
+            ('[argument...]', 'This means you can have **multiple arguments**.')
 
         )
 
