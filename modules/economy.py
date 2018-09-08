@@ -14,15 +14,6 @@ class Economy:
         self._last_result = None
         self.sessions = set()
 
-    def has_voted(self, userid):
-        request = Request(f"https://discordbots.org/api/bots/{self.bot.user.id}/check?userId={userid}")
-        request.add_header("Authorization",
-                           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ0ODAzODgxMjA0ODk0OTI1MyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTM1Mjg3ODU1fQ.rzBA-DMXmg6_asYBF61wEx5HTMmaqkv4NpMfekoFe-w")
-        request.add_header('User-Agent', 'Mozilla/5.0')
-
-        data = json.loads(urlopen(request).read().decode())
-        return data["voted"] == 1
-
     async def __error(self, ctx, error):
         """A local error handler for all errors arising from commands in this cog."""
         if isinstance(error, commands.MissingPermissions):
@@ -52,27 +43,6 @@ class Economy:
             except discord.HTTPException:
                 pass
 
-    @commands.command(aliases=['vb'], hidden=True)
-    @commands.is_owner()
-    async def votebonus(self, ctx):
-        """Vote for the bot for free money!"""
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            self.bot.get_command("hourly").reset_cooldown(ctx)
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        if self.has_voted(self):
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+5000 WHERE userid={ctx.author.id};")
-            e = discord.Embed(description=f"You have successfully voted for <@{self.bot.user.id}>, and gained **$5000** into your wallet!\n\nThanks a lot for voting!", color=discord.Color.green())
-            e.set_author(name=f"{ctx.author.name}'s Votebonus", icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=e)
-            return
-        if not self.has_voted:
-            await ctx.send("You have yet to voted for me.\nI will greatly appreciate if you were to vote for me.\nhttps://discordbots.org/bot/448038812048949253/vote\nThanks!")
-            return
 
     @commands.command(aliases=['create'])
     async def register(self, ctx, name: str = None):
@@ -104,14 +74,14 @@ class Economy:
         money = data['balance']
 
         if user != ctx.author:
-            embed = discord.Embed(color=discord.Colour.orange())
+            embed = discord.Embed(color=0xF3B800)
             embed.add_field(name='Money Balance', value=f"**${money}**", inline=True)
             embed.set_author(name=f"{user.name}'s Wallet", icon_url=user.avatar_url)
             embed.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             embed.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=embed)
         else:
-            embed = discord.Embed(color=discord.Colour.orange())
+            embed = discord.Embed(color=0xF3B800)
             embed.add_field(name='Money Balance', value=f"**${money}**", inline=True)
             embed.set_author(name=f"{user.name}'s Wallet", icon_url=user.avatar_url)
             embed.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
@@ -465,11 +435,12 @@ class Economy:
             await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
             return
 
-        flower = ['Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'Rainbow']
-        flowers = random.choice(flower)
+        flowers = random.choice(['Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'Rainbow'])
+        hotflowers = random.choice(['Red', 'Yellow', 'Orange'])
+        coldflowers = random.choice(['Blue', 'Pastel', 'Purple'])
+        winflowers = random.choice(['Rainbow'])
 
         money = data['balance']
-        result = randint(1, 4272)
 
         if amount > money:
             em = discord.Embed(color=16720640)
@@ -488,7 +459,7 @@ class Economy:
 
         elif flowers == 'Orange':
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/9/99/Orange_flowers_detail.png/revision/latest?cb=20160918221429"
-            flowercolour = 0xF3B800
+            flowercolour = discord.Color.orange()
 
         elif flowers == 'Blue':
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/d/d6/Blue_flowers_detail.png/revision/latest?cb=20160918221426"
@@ -510,12 +481,12 @@ class Economy:
             flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481206682437943326/kriXGoogle.png'
             flowercolour = 0x9663F5
 
-        if result < 1424:
+        if flower == hotflowers:
             await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
+            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
         else: 
@@ -523,39 +494,23 @@ class Economy:
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
+            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
-        if result < 2856 and result > 1424:
+        if flower == coldflowers:
             await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
+            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
-            return
-        else:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
-            await ctx.send(embed=e)
-            return
-        if result < 4272 and result > 2856:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
-            await ctx.send(embed=e)
-            return
+            return  
         else: 
             await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"{flowers}: {result}".title())
+            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
 
