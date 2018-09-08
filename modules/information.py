@@ -65,7 +65,7 @@ class Information:
         elif not minutes:
             await ctx.send(f"Uptime: **{seconds} seconds**")
         else:
-            await ctx.send(f"Uptime: **{days} days, **{hours} hours, {minutes} minutes and {seconds} seconds**")
+            await ctx.send(f"Uptime: **{days} days, {hours} hours, {minutes} minutes and {seconds} seconds**")
 
     @commands.command(aliases=["information", "about"])
     async def info(self, ctx):
