@@ -68,14 +68,19 @@ class Moderation:
 
     @commands.command()
     @checks.has_permissions(manage_guild=True)
-    async def blacklist(self, ctx, user: discord.User):
+    async def blacklist(self, ctx, user: discord.User, *, reason = None):
         """Blacklist a user from using the bot's commands"""
         data = await self.bot.db.fetch("SELECT * FROM blacklist")
         await self.bot.db.execute("INSERT INTO blacklist VALUES ($1)", user.id)
 
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands')
-        await ctx.send(embed=e)
+        if reason is None:
+            e = discord.Embed(color=discord.Color.green())
+            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands')
+            await ctx.send(embed=e)
+        else:
+            e = discord.Embed(color=discord.Color.green())
+            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands for: {reason}')
+            await ctx.send(embed=e)  
 
 
     @commands.command()
