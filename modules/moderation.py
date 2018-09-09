@@ -68,7 +68,7 @@ class Moderation:
 
     @commands.command()
     @checks.has_permissions(manage_guild=True)
-    async def blacklist(self, ctx, user: discord.User, *, reason = None):
+    async def blacklist(self, ctx, user: discord.Member, *, reason = None):
         """Blacklist a user from using the bot's commands"""
         data = await self.bot.db.fetch("SELECT * FROM blacklist")
         await self.bot.db.execute("INSERT INTO blacklist VALUES ($1)", user.id)
@@ -84,7 +84,7 @@ class Moderation:
 
     @commands.command(aliases=['unblacklist', 'removeblacklist'])
     @checks.has_permissions(manage_guild=True)
-    async def remove_blacklist(self, ctx, *, user: discord.User):
+    async def remove_blacklist(self, ctx, *, user: discord.Member):
         """Remove a blacklisted user"""
 
         data = await self.bot.db.fetch("SELECT * FROM blacklist")
@@ -93,7 +93,6 @@ class Moderation:
         e = discord.Embed(color=discord.Color.green())
         e.add_field(name=f"Unblacklisted <:yes:473312268998803466>", value=f"Removed {user.mention} from the blacklisted list. They can now use commands again")
         await ctx.send(embed=e)
-
 
     @commands.command()
     async def list(self, ctx):

@@ -3,6 +3,7 @@ import discord
 import asyncpg
 import random
 import requests
+from .utils import checks
 from random import randint
 from discord.ext.commands.cooldowns import BucketType
 
@@ -45,7 +46,7 @@ class Economy:
 
 
     @commands.command(aliases=['create'])
-    async def register(self, ctx, name: str = None):
+    async def register(self, ctx, *, name = None):
         """Register your account"""
 
         if name is None:
@@ -60,7 +61,7 @@ class Economy:
 
 
     @commands.command(aliases=['w', '$', 'credits', 'bal', 'wallet', 'coins', 'cred', 'money'])
-    async def balance(self, ctx, user: discord.Member = None):
+    async def balance(self, ctx, user: discord.User = None):
         """Shows a users' or your balance"""
 
         if user is None:
@@ -201,7 +202,7 @@ class Economy:
             f'While trying to find out how to code, you find a dandy **${amount}**',
             f'While on the way to the store, you stumble across your friend who gives you **${amount}**',
             f'During your coding session, you notice there is **${amount}** sitting on your table',
-            f'On the way to work, you buy your friend breakfast. In return he hands you **${amount}**'
+            f'On the way to work, you buy your friend breakfast. In return, he hands you **${amount}**'
             ]
 
         search = random.choice(possible_responses)
@@ -229,7 +230,7 @@ class Economy:
             await ctx.send(f"You are on cooldown! Please try again in **{seconds} seconds**")
 
     @commands.command(aliases=['give'])
-    async def transfer(self, ctx, user: discord.Member, amount: int):
+    async def transfer(self, ctx, user: discord.User, amount: int):
         """Transfer an amount of money to someone"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
@@ -258,7 +259,7 @@ class Economy:
 
     @commands.command()
     @commands.cooldown(1, 60, BucketType.user)
-    async def rob(self, ctx, user: discord.Member, amount: int):
+    async def rob(self, ctx, user: discord.User, amount: int):
         """Rob a member for a chance to lose or gain money"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
@@ -287,7 +288,7 @@ class Economy:
             return
 
 
-        elif rob < 60:
+        elif rob < 50:
             await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", amount)
             await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
             e = discord.Embed(color=16720640)
@@ -296,7 +297,7 @@ class Economy:
             e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=e)
             return
-        elif rob > 60:
+        elif rob > 50:
             await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {ctx.author.id};", amount)
             await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {user.id};", amount)
             e = discord.Embed(color=discord.Color.green())
@@ -377,8 +378,8 @@ class Economy:
             await ctx.send(f"You are on cooldown! Please try again in **{minutes} minutes, {seconds} seconds**")
 
     @commands.command()
-    @commands.is_owner()
-    async def update(self, ctx, user: discord.Member, amount: int):
+    @checks.has_permissions(manage_guild=True)
+    async def update(self, ctx, user: discord.User, amount: int):
         """Updates an amount of money from your balance"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
@@ -391,8 +392,8 @@ class Economy:
         await ctx.send(embed=e)
 
     @commands.command(aliases=['subtract'])
-    @commands.is_owner()
-    async def remove(self, ctx, user: discord.Member, amount: int):
+    @checks.has_permissions(manage_guild=True)
+    async def remove(self, ctx, user: discord.User, amount: int):
         """Removes an amount of money fror your balance"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
@@ -405,15 +406,21 @@ class Economy:
         await ctx.send(embed=e)
 
     @commands.command(aliases=['lb'])
-    async def leaderboard(self, ctx):
+    async def leaderboard(self, ctx, type="global"):
         """Shows the Wallet Money leaderboard"""
+        
+        available_types = 'global'
+        if type not in available_types:
+            raise await ctx.send("Please specify what leaderboard type you would like to choose. Choices are: **global**")
 
-        lb = await self.bot.db.fetch("SELECT * FROM economy ORDER BY balance DESC LIMIT 15;")
+        lb = await self.bot.db.fetch("SELECT * FROM economy ORDER BY balance DESC LIMIT 15")
         lbnum = await self.bot.db.fetch("SELECT * FROM economy ORDER BY balance DESC LIMIT 100000;")
-        desc = [f"{a+1}. **{self.bot.get_user(lb[a]['userid'])}** - ${lb[a]['balance']}\n" for a in range(len(lb))]
+
+        if type == 'global':
+            desc = [f"{a+1}. **{self.bot.get_user(lb[a]['userid'])}** - ${lb[a]['balance']}\n" for a in range(len(lb))]
         
         embed = discord.Embed(color=discord.Colour.blurple())
-        embed.add_field(name="Wallet Money Leaderboard", value=''.join(desc))
+        embed.add_field(name="Global Wallet Money Leaderboard", value=''.join(desc))
         embed.add_field(name="Total Users:", value=len(lbnum), inline=False)
         embed.set_footer(text=f"Requested by {ctx.author}",icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
