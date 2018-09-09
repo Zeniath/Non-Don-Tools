@@ -80,7 +80,19 @@ class Moderation:
         else:
             e = discord.Embed(color=discord.Color.green())
             e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands for: {reason}')
-            await ctx.send(embed=e)  
+            await ctx.send(embed=e) 
+
+    @commands.command(aliases=['unblacklist', 'removeblacklist'])
+    @checks.has_permissions(manage_guild=True)
+    async def remove_blacklist(self, ctx, *, user: discord.User):
+        """Remove a blacklisted user"""
+
+        data = await self.bot.db.fetch("SELECT * FROM blacklist")
+        await self.bot.db.execute("DELETE FROM blacklist WHERE userid=$1", user.id)
+
+        e = discord.Embed(color=discord.Color.green())
+        e.add_field(name=f"Unblacklisted <:yes:473312268998803466>", value=f"Removed {user.mention} from the blacklisted list. They can now use commands again")
+        await ctx.send(embed=e)
 
 
     @commands.command()
@@ -93,8 +105,8 @@ class Moderation:
         e.add_field(name=f"Blacklisted Members ({len(data)})", value=f''.join(fmt))
         await ctx.send(embed=e)
 
-    @list.error
-    async def list_error(self, ctx, error):
+    @remove_blacklist.error
+    async def remove_blacklist_error(self, ctx, error):
         import traceback; traceback.print_exception(type(error), error, error.__traceback__)
 
     @commands.command()

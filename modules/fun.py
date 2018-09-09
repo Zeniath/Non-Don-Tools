@@ -91,6 +91,14 @@ class Fun:
     async def embed_handler(self, ctx, error):
         import traceback; traceback.print_exception(type(error), error, error.__traceback__)
 
+    @commands.command()
+    async def snipe(self, ctx, channel: discord.TextChannel = None):
+        """Snipe the last deleted sent message"""
+
+        messages = await channel.history(limit=1).flatten()
+
+        e = discord.Embed(color=discord.Color.dark_blue())
+        e.add_field(name="", value="")
 
     @commands.command()
     async def poll(self, ctx, *, question):

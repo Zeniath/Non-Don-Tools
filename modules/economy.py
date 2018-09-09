@@ -201,6 +201,7 @@ class Economy:
             f'While trying to find out how to code, you find a dandy **${amount}**',
             f'While on the way to the store, you stumble across your friend who gives you **${amount}**',
             f'During your coding session, you notice there is **${amount}** sitting on your table',
+            f'On the way to work, you buy your friend breakfast. In return he hands you **${amount}**'
             ]
 
         search = random.choice(possible_responses)
