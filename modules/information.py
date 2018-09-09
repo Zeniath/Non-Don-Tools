@@ -117,6 +117,15 @@ class Information:
         minutes, seconds = divmod(remainder, 60)
         days, hours = divmod(hours, 24)
 
+        if not days:
+            uptime = f"{hours} hours, {minutes} minutes and {seconds} seconds"
+        elif not hours:
+            uptime = f"{minutes} minutes and {seconds} seconds"
+        elif not minutes:
+            uptime = f"{seconds} seconds"
+        else:
+            uptime  = f"{days} days, {hours} hours, {minutes} minutes and {seconds} seconds"
+
         online = (len(set([m for m in self.bot.get_all_members() if m.status == discord.Status.online and not m.bot])))
         away = (len(set([m for m in self.bot.get_all_members() if m.status == discord.Status.idle and not m.bot])))
         dnd = (len(set([m for m in self.bot.get_all_members() if m.status == discord.Status.dnd and not m.bot])))
@@ -141,12 +150,12 @@ class Information:
                                                 f"<:away:482652813936295937>{away}" 
                                                 f"<:DnD:482652826351173648>{dnd}" 
                                                 f"<:offline:482652799188860931>{offline}")
-        e.add_field(name="Bot Stats", value=f"**Owner:** <@249750282324410368>\n"
+        e.add_field(name="Bot Stats", value=f"**Coder:** <@249750282324410368>\n"
                                             f"**Commands:** {len(self.bot.commands)}\n"
                                             f"**Cogs:** {len(self.bot.cogs)}\n"
                                             f"**Commands Invoked:** {v}", inline=False)
         e.add_field(name="Discord Stats", value=f"**Prefix:** {pre}\n"
-                                                f"**Uptime:** {days} days, {hours} hours, {minutes} minutes, {seconds} seconds\n"
+                                                f"**Uptime:** {uptime}\n"
                                                 f"**Ping:** {ctx.bot.latency * 1000:,.0f}ms\n"
                                                 f"**Guilds:** {len(self.bot.guilds)}\n"
                                                 f"**Users:** {len(self.bot.users)}\n"
