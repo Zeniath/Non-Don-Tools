@@ -77,14 +77,13 @@ class Information:
         days, hours = divmod(hours, 24)
 
         if not days:
-            fmt = await ctx.send(f"Uptime: **{hours} hours, {minutes} minutes and {seconds} seconds**")
+            fmt = f"{hours} hours, {minutes} minutes and {seconds} seconds"
         elif not hours:
-            fmt = await ctx.send(f"Uptime: **{minutes} minutes and {seconds} seconds**")
+            fmt = f"{minutes} minutes and {seconds} seconds"
         elif not minutes:
-            fmt = await ctx.send(f"Uptime: **{seconds} seconds**")
+            fmt = f"{seconds} seconds"
         else:
-            fmt = await ctx.send(f"Uptime: **{days} days, {hours} hours, {minutes} minutes and {seconds} seconds**")
-
+            fmt = f"{days} days, {hours} hours, {minutes} minutes and {seconds} seconds"
 
         value = await self.bot.db.fetchrow("SELECT commandcount FROM commands;")
         v = value['commandcount']
@@ -102,7 +101,7 @@ class Information:
         e.add_field(name="Prefix:", value=f"{p}", inline=False)
         e.add_field(name="Ping:", value=f"{ctx.bot.latency * 1000:,.0f}ms", inline=True)
         e.add_field(name="Commands Invoked:", value=f"{v}", inline=True)
-        e.add_field(name="Uptime: ", value=''.join(fmt), inline=False)
+        e.add_field(name="Uptime: ", value=f"{fmt}", inline=False)
         e.add_field(name="Servers:", value=f"{len(self.bot.guilds)}", inline=True)
         e.add_field(name="Members:", value=f"{len(self.bot.users)}", inline=True)
         e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
