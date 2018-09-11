@@ -100,9 +100,13 @@ class Moderation:
         data = await self.bot.db.fetch("SELECT * FROM blacklist")
         fmt = [f"**- {self.bot.get_user(data[_]['userid'])}**\n" for _ in range(len(data))]
 
-        e = discord.Embed(color=discord.Color.purple())
-        e.add_field(name=f"Blacklisted Members ({len(data)})", value=f''.join(fmt))
-        await ctx.send(embed=e)
+        if len(data) == 0:
+            return await ctx.send("No one is currently blacklisted")
+
+        else:
+            e = discord.Embed(color=discord.Color.purple())
+            e.add_field(name=f"Blacklisted Members ({len(data)})", value=f''.join(fmt))
+            await ctx.send(embed=e)
 
     @remove_blacklist.error
     async def remove_blacklist_error(self, ctx, error):
