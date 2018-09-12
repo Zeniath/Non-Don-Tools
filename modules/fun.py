@@ -25,6 +25,92 @@ class Fun:
             except discord.HTTPException:
                 pass
 
+    @commands.command()
+    async def big(self, ctx, text):
+        """Makes your text go big!"""
+
+        emoji_dict = {
+            'a': [':a:', ':regional_indicator_a:', ':rice_ball:', ':arrow_up_small:'],
+            'b': [':b:', ':regional_indicator_b:'],
+            'c': [':regional_indicator_c:', '©', ':compression:'],
+            'd': [':regional_indicator_d:', ':leftwards_arrow_with_hook:'],
+            'e': [':regional_indicator_e:', ':three:', ':e_mail:', ':euro:'],
+            'f': [':regional_indicator_f:', ':flags:'],
+            'g': [':regional_indicator_g:', ':compression:', ':six:', ':nine:', ':fuelpump:'],
+            'h': [':regional_indicator_h:', ':pisces:'],
+            'i': [':regional_indicator_i:', ':information_source:', ':mens:', ':one:'],
+            'j': [':regional_indicator_j:', ':japan:'],
+            'k': [':regional_indicator_k:', ':tanabata_tree:'],
+            'l': [':regional_indicator_l:', ':one:', ':regional_indicator_i:', ':boot:', ':pound:'],
+            'm': [':regional_indicator_m:', ':m:', ':chart_with_downwards_trend:'],
+            'n': [':regional_indicator_n:', ':capricorn:', ':musical_note:'],
+            'o': [':regional_indicator_o:', ':o2:', ':zero:', ':o:', ':radio_button:', ':record_button:', ':white_circle:', ':black_circle:', ':large_blue_circle:', ':red_circle:', ':dizzy:'],
+            'p': [':regional_indicator_p:', ':parking:'],
+            'q': [':regional_indicator_q:', ':leo:'],
+            'r': [':regional_indicator_r:', '®'],
+            's': [':regional_indicator_s:', ':heavy_dollar_sign:', ':five:', ':zap:', ':moneybag:', ':dollar:'],
+            't': [':regional_indicator_t:', ':cross:', ':heavy_plus_sign:', ':level_slider:', ':palm_tree:', ':seven:'],
+            'u': [':regional_indicator_u:', ':ophiuchus:', ':dragon:'],
+            'v': [':regional_indicator_v:', ':aries:', ':ballot_box_with_check:'],
+            'w': [':regional_indicator_w:', ':wavy_dash:', ':chart_with_upwards_trend:'],
+            'x': [':regional_indicator_x:', ':negative_squared_cross_mark:', ':heavy_multiplication_x:', ':x:', ':hammer_pick:'],
+            'y': [':regional_indicator_y:', ':v:', ':yen:'],
+            'z': [':regional_indicator_z:', ':two:'],
+            ' ': [':white_small_square:'],
+            '0': [':zero:', ':o2:', ':zero:', ':o:', ':radio_button:', ':record_button:', ':white_circle:', ':black_circle:', ':large_blue_circle:', ':red_circle:', ':dizzy:'],
+            '1': [':one:', ':regional_indicator_i:'],
+            '2': [':two:', ':regional_indicator_z:'],
+            '3': [':three:'],
+            '4': [':four:'],
+            '5': [':five:', ':regional_indicator_s:', ':heavy_dollar_sign:', ':zap:'],
+            '6': [':six:'],
+            '7': [':seven:'],
+            '8': [':eight:', ':8ball:', ':regional_indicator_b:', ':b:'],
+            '9': [':nine:'],
+            '?': [':question:'],
+            '!': [':exclamation:', ':grey_exclamation:', ':warning:', ':heart_exclamation:'],
+            'combination': [['cool', ':cool:'], 
+                        ['back', ':back:'], 
+                        ['soon', ':soon:'], 
+                        ['free', ':free:'], 
+                        ['end', ':end:'], 
+                        ['top', ':top:'], 
+                        ['abc', ':abc:'], 
+                        ['atm', ':atm:'], 
+                        ['new', ':new:'], 
+                        ['sos', ':sos:'], 
+                        ['100', ':100:'], 
+                        ['hundred', ':100:']
+                        ['loo', ':100:'], 
+                        ['zzz', ':zzz:'], 
+                        ['nz', ':flag_nz:']
+                        ['uk', ':flag_gb:']
+                        ['...', ':speech_balloon:'], 
+                        ['ng', ':ng:'], 
+                        ['id', ':id:'], 
+                        ['vs', ':vs:'], 
+                        ['wc', ':wc:'], 
+                        ['ab', ':ab:'], 
+                        ['cl', ':cl:'], 
+                        ['ok', ':ok:'], 
+                        ['up', ':up:'], 
+                        ['10', ':keycap_ten:'],
+                        ['11', ':pause_button:'], 
+                        ['ll', ':pause_button:'], 
+                        ['ii', ':pause_button:'], 
+                        ['tm', '™'], 
+                        ['on', ':on:'], 
+                        ['oo', ':koko:'], 
+                        ['!?', ':interrobang:'], 
+                        ['!!', ':bangbang:'], 
+                        ['21', ':date:']]
+
+                }
+
+        if text in emoji_dict:
+            return await ctx.message.add_reaction(emoji_dict)
+        else:
+            await ctx.send("An error has occured")
 
     @commands.command(aliases=['em'])
     async def embed(self, ctx):

@@ -75,11 +75,11 @@ class Moderation:
 
         if reason is None:
             e = discord.Embed(color=discord.Color.green())
-            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands')
+            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands')
             await ctx.send(embed=e)
         else:
             e = discord.Embed(color=discord.Color.green())
-            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using any commands for: {reason}')
+            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands for: {reason}')
             await ctx.send(embed=e) 
 
     @commands.command(aliases=['unblacklist', 'removeblacklist'])
@@ -101,7 +101,9 @@ class Moderation:
         fmt = [f"**- {self.bot.get_user(data[_]['userid'])}**\n" for _ in range(len(data))]
 
         if len(data) == 0:
-            return await ctx.send("No one is currently blacklisted")
+            e = discord.Embed(color=16720640)
+            e.add_field(name=f"Blacklisted Members ({len(data)})", value=f'No one is currently blacklisted!')
+            await ctx.send(embed=e)
 
         else:
             e = discord.Embed(color=discord.Color.purple())
@@ -185,8 +187,7 @@ class Moderation:
             await user.remove_roles(discord.Object(id=MUTED_ROLE))
         except:
             await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
-        else:
-            await ctx.send(f"Unmuted <@{user.id}>")
+        return await ctx.send(f"Unmuted <@{user.id}>")
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

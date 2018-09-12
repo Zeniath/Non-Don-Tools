@@ -413,6 +413,21 @@ class Music:
         embed = discord.Embed(title="Connected <:yes:473312268998803466>", description=f":notes: Connected into voice channel: **{channel}**", color=discord.Color.green())
         await ctx.send(embed=embed, delete_after=3.5)
 
+    @commands.command(name="100degrees", aliases=['💯', '100o', '100', '100_degrees'])
+    async def degrees100(self, ctx):
+        """Some weather guy saying '100 degrees'"""
+
+        await ctx.trigger_typing()
+
+        vc = ctx.voice_client
+
+        if not vc:
+            await ctx.invoke(self.connect_)
+
+        elif ctx.author not in ctx.guild.voice_client.channel.members:
+            e = discord.Embed(title="Error <:no:473312284148498442>", description=":notes: Please join my **voice channel** to execute this command", color=16720640)
+            return await ctx.send(embed=e, delete_after=10)            
+
     @commands.command(name='pause')
     async def pause_(self, ctx):
         """Pauses the current song"""
@@ -444,7 +459,7 @@ class Music:
         await ctx.send(embed=e)
         
     @commands.command(name='play', aliases=['sing', 'p'])
-    async def play_(self, ctx, *, search: str):
+    async def play_(self, ctx, *, song: str):
         """Plays a song"""
         await ctx.trigger_typing()
 
@@ -461,7 +476,7 @@ class Music:
 
         player = self.get_player(ctx)
 
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+        source = await YTDLSource.create_source(ctx, song, loop=self.bot.loop, download=False)
         await player.queue.put(source)
 
     @commands.command(name='stop')
