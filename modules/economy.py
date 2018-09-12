@@ -52,11 +52,11 @@ class Economy:
         if name is None:
             name = ctx.author.name
 
-        data = await self.bot.db.fetchrow(f"SELECT * FROM economy WHERE userid={ctx.author.id};")
+        data = await self.bot.db.fetchrow("SELECT * FROM economy WHERE userid=$1;", ctx.author.id)
         if data:
             await ctx.send("You are already registered!")
             return
-        await self.bot.db.execute(f"INSERT INTO economy VALUES (1000, {ctx.author.id});")
+        await self.bot.db.execute("INSERT INTO economy VALUES (1000, $1);", ctx.author.id)
         await ctx.send(f"Successfully created your account! Your account name is **{name}**, and you will start out with **$1000**. Use `{ctx.prefix}help Economy` for information on commands")
 
 

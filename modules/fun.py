@@ -25,7 +25,7 @@ class Fun:
             except discord.HTTPException:
                 pass
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def big(self, ctx, text):
         """Makes your text go big!"""
 

@@ -165,7 +165,7 @@ class Information:
                                             f"**CPU:** {psutil.cpu_percent()}%", inline=False)
         await ctx.send(embed=e)
 
-    @commands.command(aliases=["pref"])
+    @commands.group(aliases=["pref"], invoke_without_command=True)
     async def prefix(self, ctx):
         """Shows the current prefix"""
 
@@ -180,9 +180,9 @@ class Information:
         e.add_field(name="Server Prefix:", value=f"`{data['prefix']}`")
         await ctx.send(embed=e)
 
-    @commands.command(aliases=['add_prefix'])
+    @prefix.command(aliases=['add'])
     @checks.has_permissions(manage_guild=True)
-    async def set_prefix(self, ctx, prefix):
+    async def set(self, ctx, prefix):
         """Change the current prefix"""
 
         data = await self.bot.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
@@ -201,9 +201,17 @@ class Information:
         e.set_footer(text=f'The old server prefix was: {ctx.prefix}', icon_url=ctx.guild.icon_url_as(format="png"))
         await ctx.send(embed=e)
 
-    @set_prefix.error
-    async def set_error(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
+    @prefix.command()
+    @checks.has_permissions(manage_guild=True)
+    async def reset(self, ctx):
+        """Resets the current prefix"""
+
+        await self.bot.db.execute("DELETE FROM prefixes WHERE guildid=$1;", ctx.guild.id)
+
+        e = discord.Embed(color=discord.Color.dark_blue())
+        e.add_field(name="Prefix Reset <:yes:473312268998803466>", value=f'The new server prefixes have been reset!')
+        e.set_footer(text=f'The old server prefix was: {ctx.prefix}', icon_url=ctx.guild.icon_url_as(format="png"))
+        await ctx.send(embed=e)
 
     @commands.command(aliases=['inv'])
     async def invite(self, ctx):
