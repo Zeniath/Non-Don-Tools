@@ -377,17 +377,35 @@ class Economy:
             minutes, seconds = divmod(remainder, 60)
             await ctx.send(f"You are on cooldown! Please try again in **{minutes} minutes, {seconds} seconds**")
 
-    @commands.command()
+    @commands.command(aliases=['add'])
     @checks.has_permissions(manage_guild=True)
     async def update(self, ctx, user: discord.User, amount: int):
-        """Updates an amount of money from your balance"""
+        """Updates an amount of money from your balance
+
+         You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
         money = data['balance']
         
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
+        await self.bot.db.execute("UPDATE economy SET balance = balance + $1 WHERE userid = $2;", amount, ctx.author.id)
         e = discord.Embed(color=discord.Color.green())
         e.add_field(name="Updated <:yes:473312268998803466>", value=f"I have added **${amount}** into <@{user.id}>'s Wallet. They now have **${money+amount}**, and before had **${money}**")
+        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
+        await ctx.send(embed=e)
+
+    @commands.command(aliases=['set_money', 'set_bal', 'bal_adjust'])
+    @checks.has_permissions(manage_guild=True)
+    async def set_amount(self, ctx, user: discord.User, amount: int):
+        """Sets an amount of money for a user
+
+        You must have Manage Server permission to use this command"""
+
+        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        money = data['balance']   
+
+        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, ctx.author.id)
+        e = discord.Embed(color=discord.Color.green())
+        e.add_field(name="Set Amount <:yes:473312268998803466>", value=f"I have set **${amount}** into <@{user.id}>'s Wallet")
         e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
         await ctx.send(embed=e)
 

@@ -41,6 +41,17 @@ class NonBot(commands.Bot):
                 print(f"{type(e).__name__}: {e}")
         super().run(TOKEN)
 
+    async def loop_game(self):
+        await self.wait_until_ready()
+        next_game = 0
+        while True:
+            games = [f'non help | {len(self.users)} members', f'non help | {len(self.guilds)} servers']
+            if next_game + 1 == len(games):
+                next_game = 0
+            else:
+                next_game += 1
+            await self.change_presence(activity = discord.Activity(name = games[next_game], type = 3))
+            await asyncio.sleep(60)
 
     async def on_ready(self,):
         print("Bot loaded")
@@ -49,15 +60,19 @@ class NonBot(commands.Bot):
         print(f"Total Cogs: {len(self.cogs)}")
         print(f"Total Commands: {len(self.commands)}")
         print("-"*35)
-        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"non help | {len(self.users)} members | {len(self.guilds)} servers"))
         creds = {"user": "zeniath", "password": "hypixel", "database": "nonbot", "host": "127.0.0.1"}
         self.db = await asyncpg.create_pool(**creds)
+        self.loop.create_task(self.loop_game())
 
     async def on_command_completion(self, ctx):
         await self.db.execute(f"UPDATE commands SET commandcount = commandcount + 1;")
 
     async def on_message(self, message):
+        blacklist = await self.db.fetch("SELECT * FROM blacklist")
+
         if message.author.bot:
+            return
+        if message.author.id in blacklist:
             return
         await self.process_commands(message)
 

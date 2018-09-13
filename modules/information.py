@@ -32,6 +32,12 @@ class Information:
                 return await ctx.send(embed=e)
             except discord.HTTPException:
                 pass
+        if isinstance(error, commands.CheckFailure):
+            try:
+                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
+                return await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
 
     @commands.command(aliases=['speedt'])
     async def speedtest(self, ctx):
@@ -180,10 +186,12 @@ class Information:
         e.add_field(name="Server Prefix:", value=f"`{data['prefix']}`")
         await ctx.send(embed=e)
 
-    @prefix.command(aliases=['add'])
+    @prefix.command(aliases=['add', 'change'])
     @checks.has_permissions(manage_guild=True)
     async def set(self, ctx, prefix):
-        """Change the current prefix"""
+        """Change the current prefix
+
+        You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
         if not data:
@@ -204,7 +212,9 @@ class Information:
     @prefix.command()
     @checks.has_permissions(manage_guild=True)
     async def reset(self, ctx):
-        """Resets the current prefix"""
+        """Resets the current prefix
+
+        You must have Manage Server permission to use this command"""
 
         await self.bot.db.execute("DELETE FROM prefixes WHERE guildid=$1;", ctx.guild.id)
 

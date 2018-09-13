@@ -497,7 +497,7 @@ class HelpPaginator(Pages):
         await self.message.edit(embed=self.embed)
 
         async def go_back_to_current_page():
-            await asyncio.sleep(30.0)
+            await asyncio.sleep(35.0)
             await self.show_current_page()
 
         self.bot.loop.create_task(go_back_to_current_page())
