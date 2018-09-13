@@ -400,12 +400,12 @@ class Economy:
 
         You must have Manage Server permission to use this command"""
 
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", userid)
         money = data['balance']   
 
-        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, ctx.author.id)
+        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, userid)
         e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Set Amount <:yes:473312268998803466>", value=f"I have set **${amount}** into <@{user.id}>'s Wallet")
+        e.add_field(name="Set Amount <:yes:473312268998803466>", value=f"<@{user.id}> now has **${amount}** in their wallet, and before had **${money}**")
         e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
         await ctx.send(embed=e)
 

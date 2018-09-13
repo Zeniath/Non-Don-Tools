@@ -119,12 +119,13 @@ class Moderation:
     @checks.has_permissions(ban_members=True)
     async def ban(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Bans a member"""
+        channel = self.bot.get_channel(448342563980705794)
 
         if reason is None:
             reason = f'Action done by {ctx.author} (ID: {ctx.author.id})'
 
         await ctx.guild.ban(discord.Object(id=member), reason=reason)
-        await ctx.send(f'**<@{member}>** has been bannned from **{ctx.guild.name}**')
+        await channel.send(f'**<@{member}>** has been bannned from **{ctx.guild.name}** for **{reason}**')
 
     @commands.command()
     @commands.guild_only()
@@ -148,6 +149,7 @@ class Moderation:
             reason = f'Action done by {ctx.author} (ID: {ctx.author.id})'
 
         await ctx.guild.unban(member.user, reason=reason)
+
         if member.reason:
             await ctx.send(f'Unbanned {member.user} (ID: {member.user.id}), previously banned for {member.reason}.')
         else:
@@ -169,7 +171,7 @@ class Moderation:
             else:
                 return await ctx.send(f"Muted <@{user.id}>")
         else:
-            if any(r.id == MUTED_ROLE for r in ctx.author.roles):
+            if None(r.id == MUTED_ROLE for r in ctx.author.roles):
                 return await ctx.message.add_reaction('\N{WARNING SIGN}')
             try:
                 await user.add_roles(discord.Object(id=MUTED_ROLE))

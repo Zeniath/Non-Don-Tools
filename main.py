@@ -68,7 +68,7 @@ class NonBot(commands.Bot):
         await self.db.execute(f"UPDATE commands SET commandcount = commandcount + 1;")
 
     async def on_message(self, message):
-        blacklist = await self.db.fetch("SELECT * FROM blacklist")
+        blacklist = await self.db.fetch("SELECT * FROM blacklist;")
 
         if message.author.bot:
             return
