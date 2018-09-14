@@ -190,7 +190,6 @@ class Information:
     @checks.has_permissions(manage_guild=True)
     async def set(self, ctx, prefix):
         """Change the current prefix
-
         You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
@@ -213,7 +212,6 @@ class Information:
     @checks.has_permissions(manage_guild=True)
     async def reset(self, ctx):
         """Resets the current prefix
-
         You must have Manage Server permission to use this command"""
 
         await self.bot.db.execute("DELETE FROM prefixes WHERE guildid=$1;", ctx.guild.id)

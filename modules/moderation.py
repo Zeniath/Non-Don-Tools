@@ -66,37 +66,9 @@ class Moderation:
             except discord.HTTPException:
                 pass
 
-    @commands.command()
-    @checks.has_permissions(manage_guild=True)
-    async def blacklist(self, ctx, user: discord.Member, *, reason = None):
-        """Blacklist a user from using the bot's commands"""
-        data = await self.bot.db.fetch("SELECT * FROM blacklist")
-        await self.bot.db.execute("INSERT INTO blacklist VALUES ($1)", user.id)
-
-        if reason is None:
-            e = discord.Embed(color=discord.Color.green())
-            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands')
-            await ctx.send(embed=e)
-        else:
-            e = discord.Embed(color=discord.Color.green())
-            e.add_field(name=f"Blacklisted <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands for: {reason}')
-            await ctx.send(embed=e) 
-
-    @commands.command(aliases=['unblacklist', 'removeblacklist'])
-    @checks.has_permissions(manage_guild=True)
-    async def remove_blacklist(self, ctx, *, user: discord.Member):
-        """Remove a blacklisted user"""
-
-        data = await self.bot.db.fetch("SELECT * FROM blacklist")
-        await self.bot.db.execute("DELETE FROM blacklist WHERE userid=$1", user.id)
-
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name=f"Unblacklisted <:yes:473312268998803466>", value=f"Removed {user.mention} from the blacklisted list. They can now use commands again")
-        await ctx.send(embed=e)
-
-    @commands.command()
-    async def list(self, ctx):
-        """Shows the list of blacklisted members"""
+    @commands.group(invoke_without_command=True)
+    async def blacklist(self, ctx):
+        """Shows the blacklisted members"""
         data = await self.bot.db.fetch("SELECT * FROM blacklist")
         fmt = [f"**- {self.bot.get_user(data[_]['userid'])}**\n" for _ in range(len(data))]
 
@@ -104,15 +76,56 @@ class Moderation:
             e = discord.Embed(color=16720640)
             e.add_field(name=f"Blacklisted Members ({len(data)})", value=f'No one is currently blacklisted!')
             await ctx.send(embed=e)
-
         else:
             e = discord.Embed(color=discord.Color.purple())
             e.add_field(name=f"Blacklisted Members ({len(data)})", value=f''.join(fmt))
             await ctx.send(embed=e)
 
-    @remove_blacklist.error
-    async def remove_blacklist_error(self, ctx, error):
+    @blacklist.command()
+    @checks.has_permissions(manage_guild=True)
+    async def add(self, ctx, user: discord.Member, *, reason = None):
+        """Blacklist a user from using the bot's commands"""
+
+        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1;", user.id)
+        if data:
+            e = discord.Embed(color=16720640)
+            e.add_field(name=f"Error <:no:473312284148498442>", value=f"{user.mention} is already blacklisted!")
+            return await ctx.send(embed=e)
+            
+        await self.bot.db.execute("INSERT INTO blacklist VALUES ($1)", user.id)
+        self.bot.blacklist.append(user.id)
+
+        if reason is None:
+            e = discord.Embed(color=discord.Color.green())
+            e.add_field(name=f"Blacklist Add <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands')
+            await ctx.send(embed=e)
+        else:
+            e = discord.Embed(color=discord.Color.green())
+            e.add_field(name=f"Blacklist Add <:yes:473312268998803466>", value=f'Blacklisted {user.mention} from using the bots commands for: {reason}')
+            await ctx.send(embed=e) 
+
+    @blacklist.command(aliases=['un'])
+    @checks.has_permissions(manage_guild=True)
+    async def remove(self, ctx, *, user: discord.Member):
+        """Remove a blacklisted user"""
+
+        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1;", user.id)
+        if not data:
+            e = discord.Embed(color=16720640)
+            e.add_field(name=f"Error <:no:473312284148498442>", value=f"{user.mention} is not blacklisted!")
+            return await ctx.send(embed=e)
+
+        await self.bot.db.execute("DELETE FROM blacklist WHERE userid=$1", user.id)
+        self.bot.blacklist.remove(user.id)
+
+        e = discord.Embed(color=discord.Color.green())
+        e.add_field(name=f"Blacklist Removed <:yes:473312268998803466>", value=f"Removed {user.mention} from the blacklisted list. They can now use commands again")
+        await ctx.send(embed=e)
+
+    @add.error
+    async def add_error(self, ctx, error):
         import traceback; traceback.print_exception(type(error), error, error.__traceback__)
+
 
     @commands.command()
     @commands.guild_only()

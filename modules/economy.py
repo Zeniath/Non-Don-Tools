@@ -409,7 +409,7 @@ class Economy:
             return
         money = data['balance']   
 
-        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, userid)
+        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, user.id)
         e = discord.Embed(color=discord.Color.green())
         e.add_field(name="Set Amount <:yes:473312268998803466>", value=f"<@{user.id}> now has **${amount}** in their wallet, and before had **${money}**")
         e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
@@ -420,13 +420,13 @@ class Economy:
     async def remove(self, ctx, user: discord.User, amount: int):
         """Removes an amount of money fror your balance"""
 
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", user.id)
         if not data:
             await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
             return
         money = data['balance']
         
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {user.id};", amount)
+        await self.bot.db.execute("UPDATE economy SET balance = balance - $1 WHERE userid = $2;", amount, user.id)
         e = discord.Embed(color=discord.Color.green())
         e.add_field(name="Removed <:yes:473312268998803466>", value=f"I have removed **${amount}** from <@{user.id}>'s Wallet. They now have **${money-amount}**, and before had **${money}**")
         e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
