@@ -57,7 +57,7 @@ class Modules:
         except Exception as e:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
-            await ctx.send(f'Loaded module: **{module}**')
+            await ctx.send(f'Loaded module: `{module}`')
 
     @commands.command(hidden=True)
     async def unload(self, ctx, *, module):
@@ -67,7 +67,7 @@ class Modules:
         except Exception as e:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
-            await ctx.send(f'Unloaded module: **{module}**')
+            await ctx.send(f'Unloaded module: `{module}`')
 
     @commands.command(hidden=True)
     async def reload(self, ctx, *, module):
@@ -78,7 +78,7 @@ class Modules:
         except Exception as e:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
-            await ctx.send(f'Reloaded module: **{module}**')
+            await ctx.send(f'Reloaded module: `{module}`')
 
 def setup(bot):
     bot.add_cog(Modules(bot))

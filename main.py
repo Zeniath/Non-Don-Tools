@@ -6,7 +6,7 @@ import datetime
 from datetime import datetime
 from discord.ext.commands.cooldowns import BucketType
 
-TOKEN = ''
+TOKEN = 'NDYxMzI2NDk1ODgxNzU2Njcy.Dnymsw.5KnnKxMJetruzgU0IH3ol3_2ETc'
 
 extensions = ['modules.music',
               'modules.admin',

@@ -385,6 +385,9 @@ class Economy:
          You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        if not data:
+            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
+            return
         money = data['balance']
         
         await self.bot.db.execute("UPDATE economy SET balance = balance + $1 WHERE userid = $2;", amount, ctx.author.id)
@@ -401,6 +404,9 @@ class Economy:
         You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", userid)
+        if not data:
+            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
+            return
         money = data['balance']   
 
         await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, userid)
@@ -415,6 +421,9 @@ class Economy:
         """Removes an amount of money fror your balance"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        if not data:
+            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
+            return
         money = data['balance']
         
         await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {user.id};", amount)

@@ -205,17 +205,29 @@ class Fun:
     @commands.command()
     async def arrest(self, ctx, user: discord.Member=None, *, reason=None):
         """Arrest someone"""
+
         if user is None:
-            await ctx.send("Who are you trying to arrest?")
-        elif user == ctx.author:
-            await ctx.send("You cannot arrest yourself!")
+            user_arrest = await ctx.send("Who are you trying to arrest?")
+
+        def check(message):
+            return message.author.id == ctx.author.id
+
+        try:
+            arrested = await self.bot.wait_for('message', check=check, timeout=180)
+        except asyncio.TimeoutError:
+            return await user_arrest.delete()
+
+        return await ctx.send(f"**{arrested.content}** has been arrested by **{ctx.author.name}**")
+
+        if user == ctx.author:
+            return await ctx.send("You cannot arrest yourself!")
         elif reason is None:
-            await ctx.send(f"**{user}** has been arrested by **{ctx.author}**")
+            return await ctx.send(f"**{user.name}** has been arrested by **{ctx.author.name}**")
         else:
-            await ctx.send(f"**{user}** has been arrested by **{ctx.author}**: `{reason}`!")
+            return await ctx.send(f"**{user.name}** has been arrested by **{ctx.author.name}** for {reason}!")
 
 
-    @commands.command(aliases=['print','say'])
+    @commands.command(aliases=['print', 'say'])
     async def echo(self, ctx, *, content):
         """Repeats what you say"""
         await ctx.send(content)
