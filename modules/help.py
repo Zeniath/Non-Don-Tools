@@ -88,13 +88,5 @@ class Help:
             await channel.send(embed=embed)
             await ctx.send("Thanks for the feedback or report!")
 
-    @report.error
-    async def report_handler(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
-
-    @purge.error
-    async def purge_error(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
-
 def setup(bot):
     bot.add_cog(Help(bot))

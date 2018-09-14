@@ -58,7 +58,7 @@ class Server:
     async def autorole(self, ctx, *, role: discord.Role):
         """Automatically sets a role for a new member"""
 
-    @commands.command(aliases = ['member_count', 'membercount'])
+    @commands.command(aliases=['member_count', 'membercount'])
     async def members(self, ctx):
         """Shows the Discord's members"""
         await SimplePaginator(entries=ctx.guild.members, colour=discord.Color.blurple(), title=f"Members of {ctx.guild.name}", length=10).paginate(ctx)
@@ -110,7 +110,6 @@ class Server:
         e.add_field(name='Created at:', value=f"{user.created_at.strftime('%b %d, %Y')}")
         e.add_field(name='Joined server at:', value=f"{user.joined_at.strftime('%b %d, %Y')}")
         e.add_field(name='Voice:', value=f"{voice}")
-        e.add_field(name='Spotify:', value=user.activity)
         e.add_field(name=f'Roles: ({len(roles)})', value=f"{chr(173)}{', '.join(roles)}" if len(roles) < 15 else f"{len(roles)} Roles")
         await ctx.send(embed=e)
 
