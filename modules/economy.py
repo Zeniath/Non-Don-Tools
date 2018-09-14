@@ -403,7 +403,7 @@ class Economy:
 
         You must have Manage Server permission to use this command"""
 
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", userid)
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", user.id)
         if not data:
             await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
             return
