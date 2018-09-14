@@ -76,6 +76,9 @@ class NonBot(commands.Bot):
             return 
         if message.author.id in self.blacklist:
             return
+        if message.content == "non" or message.content == "🇳 🇴 🇳":
+            await message.channel.send(f"no u")
+            return
         await self.process_commands(message)
 
 
