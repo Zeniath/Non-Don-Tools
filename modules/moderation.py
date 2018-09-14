@@ -86,13 +86,13 @@ class Moderation:
     async def add(self, ctx, user: discord.Member, *, reason = None):
         """Blacklist a user from using the bot's commands"""
 
-        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1;", user.id)
+        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1 AND guildid=$2;", user.id, ctx.guild.id)
         if data:
             e = discord.Embed(color=16720640)
             e.add_field(name=f"Error <:no:473312284148498442>", value=f"{user.mention} is already blacklisted!")
             return await ctx.send(embed=e)
             
-        await self.bot.db.execute("INSERT INTO blacklist VALUES ($1)", user.id)
+        await self.bot.db.execute("INSERT INTO blacklist VALUES ($1, $2)", user.id, ctx.guild.id)
         self.bot.blacklist.append(user.id)
 
         if reason is None:
@@ -109,13 +109,13 @@ class Moderation:
     async def remove(self, ctx, *, user: discord.Member):
         """Remove a blacklisted user"""
 
-        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1;", user.id)
+        data = await self.bot.db.fetch("SELECT * FROM blacklist WHERE userid=$1 AND guildid=$2;", user.id, ctx.guild.id)
         if not data:
             e = discord.Embed(color=16720640)
             e.add_field(name=f"Error <:no:473312284148498442>", value=f"{user.mention} is not blacklisted!")
             return await ctx.send(embed=e)
 
-        await self.bot.db.execute("DELETE FROM blacklist WHERE userid=$1", user.id)
+        await self.bot.db.execute("DELETE FROM blacklist WHERE userid=$1 AND guildid=$2", user.id, ctx.guild.id)
         self.bot.blacklist.remove(user.id)
 
         e = discord.Embed(color=discord.Color.green())
