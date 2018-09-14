@@ -413,7 +413,7 @@ class Music:
         embed = discord.Embed(title="Connected <:yes:473312268998803466>", description=f":notes: Connected into voice channel: **{channel}**", color=discord.Color.green())
         await ctx.send(embed=embed, delete_after=3.5)
 
-    @commands.command(name="100degrees", aliases=['💯', '100o', '100', '100_degrees'])
+    @commands.command(name="100degrees", aliases=['💯', '100o', '100', '100_degrees'], hidden=True)
     async def degrees100(self, ctx):
         """Some weather guy saying '100 degrees'"""
 
