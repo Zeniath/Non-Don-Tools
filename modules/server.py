@@ -53,10 +53,22 @@ class Server:
         else:
             return
 
-    @commands.command(hidden=True)
-    @commands.has_permissions(manage_roles=True)
+    @commands.command(aliases=['auto_role'], hidden=True)
+    @checks.has_permissions(manage_roles=True)
     async def autorole(self, ctx, *, role: discord.Role):
-        """Automatically sets a role for a new member"""
+        """Automatically sets a role for a new member
+
+        You must have the Manage Role permission to use this command"""
+
+        await ctx.send("")
+
+        self.bot.db.execute("INSERT INTO autorole ($1, $2);", role.id, ctx.guild.id)
+
+        e = discord.Embed(color=discord.Color.purple())
+        e.set_thumbnail(url=ctx.guild.icon_url)
+        e.add_field(name="Auto Role <:yes:473312268998803466>", value=f"Successfully set **{role.content}** as the server auto role!")
+        e.set_footer(text=f'Server Name: {ctx.guild.name} | Server ID: {ctx.guild.id}', icon_url=ctx.guild.icon_url)
+        await ctx.send(embed=e)
 
     @commands.command(aliases=['member_count', 'membercount'])
     async def members(self, ctx):

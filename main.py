@@ -22,14 +22,21 @@ extensions = ['modules.music',
 class NonBot(commands.Bot):
 
     def __init__(self):
-        super().__init__(command_prefix=self.get_pref, case_insensitive=True)
+        super().__init__(command_prefix=self.get_pref, reconnect=True, case_insensitive=True)
         self.launch_time = datetime.utcnow()
         self.embed = discord.Embed(color=discord.Color.purple())
+        self.blacklist = []
 
     async def get_pref(self, bot, ctx):
         data = await self.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
         if not data:
             return ['non ', 'Non ', 'don ', 'Don ', '<@!448038812048949253> ', '<@448038812048949253> ']
+        return data['prefix']
+
+    async def prefix_grabber(self, bot, ctx):
+        data = await self.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
+        if not data:
+            return 'non'
         return data['prefix']
 
     def run(self):
@@ -53,7 +60,7 @@ class NonBot(commands.Bot):
                 next_game = 0
             else:
                 next_game += 1
-            await self.change_presence(activity = discord.Activity(name = games[next_game], type = 3))
+            await self.change_presence(activity=discord.Activity(name=games[next_game], type = 3))
             await asyncio.sleep(60)
 
     async def on_ready(self):
@@ -77,7 +84,8 @@ class NonBot(commands.Bot):
         if message.author.id in self.blacklist:
             return
         if message.content == "non" or message.content == "🇳 🇴 🇳":
-            await message.channel.send(f"no u")
+            prefix = await self.prefix_grabber(self, message) or "non "
+            await message.channel.send(f"Hey! My prefix on this server is **{prefix}**. To see what my commands are, use **{prefix} help**")
             return
         await self.process_commands(message)
 
