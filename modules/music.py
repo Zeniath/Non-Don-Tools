@@ -328,18 +328,6 @@ class Music:
         except KeyError:
             pass
 
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.NoPrivateMessage):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=":notes: This command **cannot** be used in **Private Messages**", color=16720640)
-                return await ctx.send(embed=e, delete_after=10)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, InvalidVoiceChannel):
-            embed = discord.Embed(title="Error <:no:473312284148498442>", description=":notes: **Invalid voice channel**\n\n:notes: Please join a **voice channel** or specifically provide me with one", color=16720640)
-            await ctx.send(embed=embed, delete_after=10)
-
         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 

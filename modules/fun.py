@@ -11,20 +11,6 @@ class Fun:
     def __init__(self, bot):
         self.bot = bot
 
-    async def __error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        if isinstance(error, commands.CommandInvokeError):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-
     @commands.command(hidden=True)
     async def big(self, ctx, text):
         """Makes your text go big!"""
@@ -173,10 +159,6 @@ class Fun:
         e.set_footer(text=f"{msg3.content}")
         await ctx.send(embed=e)
 
-    @embed.error
-    async def embed_handler(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
-
     @commands.command(hidden=True)
     async def snipe(self, ctx, channel: discord.TextChannel = None):
         """Snipe the last edited/deleted message"""
@@ -204,7 +186,7 @@ class Fun:
         await msg.add_reaction(":no:473312284148498442")
 
     @commands.command()
-    async def arrest(self, ctx, user: discord.Member=None, *, reason=None):
+    async def arrest(self, ctx, user: discord.Member=None, *, reason: commands.clean_content=None):
         """Arrest someone"""
 
         if user is None:
@@ -229,7 +211,7 @@ class Fun:
 
 
     @commands.command(aliases=['print', 'say'])
-    async def echo(self, ctx, *, content):
+    async def echo(self, ctx, *, content: commands.clean_content):
         """Repeats what you say"""
         await ctx.send(content)
 
@@ -268,9 +250,9 @@ class Fun:
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def clap(self, ctx, *, text):
+    async def clap(self, ctx, *, text: commands.clean_content):
         """Claps some text"""
-        await ctx.send(':clap: '.join(f':clap: {text} :clap:'.split()))
+        await ctx.send(':clap: '.join(f'{text}'.split()))
 
     @commands.command(aliases=['coin-flip', 'cf'])
     async def coinflip(self, ctx):

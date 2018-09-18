@@ -36,7 +36,7 @@ class NonBot(commands.Bot):
     async def prefix_grabber(self, bot, ctx):
         data = await self.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
         if not data:
-            return 'non'
+            return 'non '
         return data['prefix']
 
     def run(self):
@@ -83,11 +83,55 @@ class NonBot(commands.Bot):
             return 
         if message.author.id in self.blacklist:
             return
-        if message.content == "non" or message.content == "🇳 🇴 🇳":
-            prefix = await self.prefix_grabber(self, message) or "non "
-            await message.channel.send(f"Hey! My prefix on this server is **{prefix}**. To see what my commands are, use **{prefix} help**")
+        if message.content == "non" or message.content == "🇳 🇴 🇳" or message.content == f"<@!{self.user.id}>" or message.content == f"<@{self.user.id}>":
+            prefix = await self.prefix_grabber(self, message)
+            await message.channel.send(f"Hey! My prefix on this server is **{prefix}**. To see what my commands are, use **{prefix}help**")
             return
         await self.process_commands(message)
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            try:
+                e = discord.Embed(title="Error <:no:473312284148498442>", description=f"{str(error)}".capitalize(), color=16720640)
+                return await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, commands.CommandInvokeError):
+            try:
+                e = discord.Embed(color=16720640)
+                e.add_field(name="Error <:no:473312284148498442>", value=f"{str(error)}".capitalize())
+                await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, commands.MissingRequiredArgument):
+            try:
+                e = discord.Embed(color=16720640)
+                e.add_field(name="Error <:no:473312284148498442>", value=f"{str(error)}".capitalize())
+                await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, commands.CheckFailure):
+            try:
+                e = discord.Embed(title="Error <:no:473312284148498442>", description=f"{str(error)}".capitalize(), color=16720640)
+                return await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, commands.BadArgument):
+            try:
+                e = discord.Embed(title="Error <:no:473312284148498442>", description=f"{str(error)}".capitalize(), color=16720640)
+                return await ctx.send(embed=e)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, commands.NoPrivateMessage):
+            try:
+                e = discord.Embed(title="Error <:no:473312284148498442>", description=":notes: This command **cannot** be used in **Private Messages**", color=16720640)
+                return await ctx.send(embed=e, delete_after=10)
+            except discord.HTTPException:
+                pass
+        elif isinstance(error, InvalidVoiceChannel):
+            embed = discord.Embed(title="Error <:no:473312284148498442>", description=":notes: **Invalid voice channel**\n\n:notes: Please join a **voice channel** or specifically provide me with one", color=16720640)
+            await ctx.send(embed=embed, delete_after=10)
+
 
 
 if __name__ == "__main__":

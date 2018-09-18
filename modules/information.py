@@ -18,34 +18,6 @@ class Information:
         self._last_result = None
         self.sessions = set()
 
-    def do_st(self):
-        s = speedtest.Speedtest()
-        s.get_best_server()
-        dl = s.download()
-        ul = s.upload()
-
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.MissingPermissions):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        if isinstance(error, commands.CheckFailure):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-
-    @commands.command(aliases=['speedt'])
-    async def speedtest(self, ctx):
-        async with ctx.typing():
-            dl, ul = await self.bot.loop.run_in_executor(None, self.do_st)
-            await ctx.send(f":arrow_down: Download: **{int(dl/1024/1024)} MB/s**\n:arrow_up: Upload: **{int(ul/1024/1024)} MB/s**")
-
-
     @commands.command(aliases= ["ms"])
     async def ping(self, ctx):
         """Shows the bot's latency"""
@@ -190,6 +162,7 @@ class Information:
     @checks.has_permissions(manage_guild=True)
     async def set(self, ctx, prefix):
         """Change the current prefix
+
         You must have Manage Server permission to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
@@ -212,6 +185,7 @@ class Information:
     @checks.has_permissions(manage_guild=True)
     async def reset(self, ctx):
         """Resets the current prefix
+
         You must have Manage Server permission to use this command"""
 
         await self.bot.db.execute("DELETE FROM prefixes WHERE guildid=$1;", ctx.guild.id)
@@ -223,7 +197,7 @@ class Information:
 
     @commands.command(aliases=['inv'])
     async def invite(self, ctx):
-        """Gives an invite link"""
+        """Gives an invite linsk"""
         embed = discord.Embed(title='Invite the bot!', url='https://discordapp.com/api/oauth2/authorize?client_id=448038812048949253&permissions=8&scope=bot', description='Want to support the server? Want to give suggestions?\nJoin my server! https://discord.gg/g7qJU8H', color=4737156)
         embed.set_footer(text='If you have any questions, feel free to message the creator of this bot, Zeniath#4729')
         embed.set_author(name='Non Dons Bot', icon_url='https://cdn.discordapp.com/icons/302689712617816064/b20f858ff835ec4ea181d1710ff66a93.webp?size=1024')

@@ -15,36 +15,6 @@ class Economy:
         self._last_result = None
         self.sessions = set()
 
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.MissingPermissions):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, commands.CommandInvokeError):
-            try:
-                e = discord.Embed(color=16720640)
-                e.add_field(name="Error <:no:473312284148498442>", value=str(error))
-                await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, commands.MissingRequiredArgument):
-            try:
-                e = discord.Embed(color=16720640)
-                e.add_field(name="Error <:no:473312284148498442>", value=str(error))
-                await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, commands.CheckFailure):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-
-
     @commands.command(aliases=['create'])
     async def register(self, ctx, *, name = None):
         """Register your account"""
@@ -378,7 +348,7 @@ class Economy:
             await ctx.send(f"You are on cooldown! Please try again in **{minutes} minutes, {seconds} seconds**")
 
     @commands.command(aliases=['add'])
-    @checks.has_permissions(manage_guild=True)
+    @commands.is_owner()
     async def update(self, ctx, user: discord.User, amount: int):
         """Updates an amount of money from your balance
 
@@ -397,7 +367,7 @@ class Economy:
         await ctx.send(embed=e)
 
     @commands.command(aliases=['set_money', 'set_bal', 'bal_adjust'])
-    @checks.has_permissions(manage_guild=True)
+    @commands.is_owner()
     async def set_amount(self, ctx, user: discord.User, amount: int):
         """Sets an amount of money for a user
 
@@ -416,7 +386,7 @@ class Economy:
         await ctx.send(embed=e)
 
     @commands.command(aliases=['subtract'])
-    @checks.has_permissions(manage_guild=True)
+    @commands.is_owner()
     async def remove(self, ctx, user: discord.User, amount: int):
         """Removes an amount of money fror your balance"""
 

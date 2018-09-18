@@ -201,11 +201,6 @@ class Admin:
         await ctx.send("wow lowkey rude but fine")
         await self.bot.logout()
 
-    @die.error
-    async def die_error(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send("no u <:dab:449375412175241216>")
 
 def setup(bot):
     bot.add_cog(Admin(bot))

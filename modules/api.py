@@ -18,19 +18,6 @@ class API:
         self._last_result = None
         self.sessions = set()
 
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.MissingPermissions):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, commands.CommandInvokeError):
-            e = discord.Embed(color=16720640)
-            e.add_field(name="Error <:no:473312284148498442>", value=str(error))
-            await ctx.send(embed=e)
-
     @commands.command(aliases=['foxxy', 'foxie']) 
     async def fox(self, ctx):
         """Sends a picture of a Fox"""

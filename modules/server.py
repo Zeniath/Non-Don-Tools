@@ -8,6 +8,7 @@ from collections import Counter
 import itertools
 import inspect
 import re
+from utils import checks
 
 class Server:
     """Server Commands"""
@@ -16,24 +17,6 @@ class Server:
         self.bot = bot
         self._last_result = None
         self.sessions = set()
-
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.MissingPermissions):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, commands.MissingRequiredArgument):
-            embed = discord.Embed(title='Error <:no:473312284148498442>', description=str(error), color=16720640)
-            await ctx.send(embed=embed)
-        elif isinstance(error, commands.BadArgument):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
 
     async def on_member_join(self, member):
         """Welcomes a member to the server"""

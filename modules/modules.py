@@ -23,15 +23,6 @@ class Modules:
         self._last_result = None
         self.sessions = set()
 
-    async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
-        if isinstance(error, commands.CheckFailure):
-            try:
-                e = discord.Embed(title="Error <:no:473312284148498442>", description=str(error), color=16720640)
-                return await ctx.send(embed=e)
-            except discord.HTTPException:
-                pass
-
     def cleanup_code(self, content):
         """Automatically removes code blocks from the code."""
         # remove ```py\n```
