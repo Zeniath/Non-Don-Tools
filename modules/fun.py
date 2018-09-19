@@ -98,6 +98,16 @@ class Fun:
         else:
             await ctx.send("An error has occured")
 
+    @commands.command(aliases=['emoj', 'randomemoji', 'emoji'])
+    async def random_emoji(self, ctx, *, emoji: discord.Emoji = None):
+        """Returns a random emoji of all servers the bot is in"""
+
+        embed = discord.Embed(title=emoji.name, colour=discord.Color.blurple())
+        embed.add_field(name='URL to Emoji', value=f'**[Emoji Link]({emoji.url})**')
+        embed.set_thumbnail(url=emoji.url)
+        await ctx.send(embed=embed)
+
+
     @commands.command(aliases=['em'])
     async def embed(self, ctx):
         """Create a customisable embed"""
@@ -157,16 +167,6 @@ class Fun:
         e = discord.Embed(description=f"{msg2.content}", colour=discord.Colour(value=value))
         e.set_author(name=f"{msg1.content}", icon_url=ctx.author.avatar_url)
         e.set_footer(text=f"{msg3.content}")
-        await ctx.send(embed=e)
-
-    @commands.command(hidden=True)
-    async def snipe(self, ctx, channel: discord.TextChannel = None):
-        """Snipe the last edited/deleted message"""
-
-        messages = await channel.history(limit=1).flatten()
-
-        e = discord.Embed(color=discord.Color.dark_blue())
-        e.add_field(name="", value="")
         await ctx.send(embed=e)
 
     @commands.command()

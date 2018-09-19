@@ -36,6 +36,27 @@ class Server:
         else:
             return
 
+    #async def on_message_delete(self, message):
+        #e = discord.Embed(title="Message Deleted", color=discord.Color.purple())
+        #e.set_author(name=f"{message.author.name}", icon_url=message.author.avatar_url)
+        #e.add_field(name=f"Message:", value=message)
+        #await message.channel.send(embed=e)
+
+    #async def on_message_edit(self, message, before, after):
+        #if before.content == after.content:
+        #    return
+        #e = discord.Embed(title="Message Edited", color=discord.Color.purple())
+        ##.set_author(name=f"{message.author.name}", icon_url=message.author.avatar_url)
+        #e.add_field(name=f"Old Message:", value=before)
+        #e.add_field(name=f"New Message:", value=after)
+        #await message.channel.send(embed=e)
+
+
+    #@commands.command(hidden=True)
+    #async def snipe(self, ctx):
+        #"""Snipe the last edited/deleted message"""
+        #await self.on_message_edit or self.on_message_delete
+
     @commands.command(aliases=['auto_role'], hidden=True)
     @checks.has_permissions(manage_roles=True)
     async def autorole(self, ctx, *, role: discord.Role):

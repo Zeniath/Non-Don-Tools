@@ -139,7 +139,7 @@ class Economy:
             await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount*2} WHERE userid={ctx.author.id};")
             e = discord.Embed(color=discord.Colour.green())
             e.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            e.add_field(name="75x3 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*3}!**")
+            e.add_field(name="75x3 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*3}**!")
             e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=e)
             return
@@ -256,7 +256,12 @@ class Economy:
             e.add_field(name="Error <:no:473312284148498442>", value=f"<@{user.id}> does not have enough money for you to rob them for **${amount}**. They only have **${user_money}**")
             await ctx.send(embed=e)
             return
-
+        elif user == ctx.author:
+            self.bot.get_command("rob").reset_cooldown(ctx)
+            e = discord.Embed(color=16720640)
+            e.add_field(name="Error <:no:473312284148498442>", value=f"You cannot rob yourself!")
+            await ctx.send(embed=e)
+            return 
 
         elif rob < 50:
             await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", amount)
@@ -266,6 +271,11 @@ class Economy:
             e.add_field(name="Robbing", value=f"You have unsuccessfully robbed <@{user.id}> and lost **${amount}**")
             e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=e)
+            em = discord.Embed(color=discord.Color.green())
+            em.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
+            em.add_field(name="Robbing", value=f"<@{ctx.author.id}> has unsuccessfully robbed you and you can have their **${amount}**!")
+            em.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
+            await user.send(embed=em)
             return
         elif rob > 50:
             await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {ctx.author.id};", amount)
@@ -275,6 +285,11 @@ class Economy:
             e.add_field(name="Robbing", value=f"You have successfully robbed <@{user.id}> and taken their **${amount}**!")
             e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=e)
+            em = discord.Embed(color=discord.Color.green())
+            em.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
+            em.add_field(name="Robbing", value=f"<@{ctx.author.id}> has successfully robbed you and taken your **${amount}**!")
+            em.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
+            await user.send(embed=em)
             return
 
     @rob.error
