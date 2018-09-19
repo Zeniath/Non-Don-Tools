@@ -228,7 +228,7 @@ class Economy:
             await ctx.send(embed=e)
 
     @commands.command()
-    @commands.cooldown(1, 60, BucketType.user)
+    @commands.cooldown(1, 3600, BucketType.user)
     async def rob(self, ctx, user: discord.User, amount: int):
         """Rob a member for a chance to lose or gain money"""
 
@@ -264,7 +264,7 @@ class Economy:
             return 
 
         elif rob < 50:
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", amount)
+            await self.bot.db.execute(f"UPDATE economy SET balance = balance - 200 WHERE userid = {ctx.author.id};", amount)
             await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
             e = discord.Embed(color=16720640)
             e.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
@@ -285,7 +285,7 @@ class Economy:
             e.add_field(name="Robbing", value=f"You have successfully robbed <@{user.id}> and taken their **${amount}**!")
             e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
             await ctx.send(embed=e)
-            em = discord.Embed(color=discord.Color.green())
+            em = discord.Embed(color=16720640)
             em.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
             em.add_field(name="Robbing", value=f"<@{ctx.author.id}> has successfully robbed you and taken your **${amount}**!")
             em.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")

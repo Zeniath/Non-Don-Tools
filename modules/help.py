@@ -35,8 +35,15 @@ class Help:
     @commands.has_permissions(manage_messages=True)
     async def purge(self, ctx, number: int = 1):
         """Purges any amount of messages"""
+        if number <= 0:
+            em = discord.Embed(color=16720640)
+            em.add_field(name="Error <:no:473312284148498442>", value=f"You must purge at least 1 message!")
+            return await ctx.send(embed=em)
+
         deleted = await ctx.message.channel.purge(limit=number)
+
         messages = [f'Deleted __**{len(deleted)}**__ {" message!" if len(deleted) == 1 else " messages!"}']
+        
         embed = discord.Embed(title='Purged <:yes:473312268998803466>', description='\n'.join(messages), color=9305953)
         embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed, delete_after=5)

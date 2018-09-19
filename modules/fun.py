@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord.ext.commands import clean_content
 import requests, random, json, psutil, aiohttp, asyncio, traceback, discord, inspect, textwrap, io, colorsys
 from random import randint
 from platform import python_version
@@ -192,15 +193,15 @@ class Fun:
         if user is None:
             user_arrest = await ctx.send("Who are you trying to arrest?")
 
-        def check(message):
-            return message.author.id == ctx.author.id
+            def check(message):
+                return message.author.id == ctx.author.id
 
-        try:
-            arrested = await self.bot.wait_for('message', check=check, timeout=180)
-        except asyncio.TimeoutError:
-            return await user_arrest.delete()
+            try:
+                arrested = await self.bot.wait_for('message', check=check, timeout=180)
+            except asyncio.TimeoutError:
+                return await user_arrest.delete()
 
-        return await ctx.send(f"**{arrested.content}** has been arrested by **{ctx.author.name}**")
+            return await ctx.send(f"**{arrested.clean_content}** has been arrested by **{ctx.author.name}**")
 
         if user == ctx.author:
             return await ctx.send("You cannot arrest yourself!")
