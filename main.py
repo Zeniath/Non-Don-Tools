@@ -24,13 +24,12 @@ class NonBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=self.get_pref, reconnect=True, case_insensitive=True)
         self.launch_time = datetime.utcnow()
-        self.embed = discord.Embed(color=discord.Color.purple())
         self.blacklist = []
 
     async def get_pref(self, bot, ctx):
         data = await self.db.fetchrow("SELECT prefix FROM prefixes WHERE guildid=$1;", ctx.guild.id)
         if not data:
-            return ['non ', 'Non ', 'don ', 'Don ', '<@!448038812048949253> ', '<@448038812048949253> ']
+            return ['non ', 'Non ', 'NON ', 'non ', 'NOn ', 'nON ', 'nOn ' 'don' 'don ', 'DON ', 'dON ', 'dOn ', 'doN ' 'Don ', '<@!448038812048949253> ', '<@448038812048949253> ']
         return data['prefix']
 
     async def prefix_grabber(self, bot, ctx):
@@ -81,7 +80,7 @@ class NonBot(commands.Bot):
     async def on_message(self, message):
         if message.author.bot:
             return 
-        if message.author.id in self.blacklist and not self.is_owner(message.author):
+        if message.author.id in self.blacklist and not await self.is_owner(message.author):
             return
         if message.content == "non" or message.content == "🇳 🇴 🇳" or message.content == f"<@!{self.user.id}>" or message.content == f"<@{self.user.id}>":
             prefix = await self.prefix_grabber(self, message)
