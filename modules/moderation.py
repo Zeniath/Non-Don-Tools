@@ -150,7 +150,7 @@ class Moderation:
     async def slowmode(self, ctx, seconds="15"):
         """Activate slowmode in a channel for 'x' number of seconds
 
-        Default amount of seconds are 15
+        Default seconds are 15
 
         You must have Manage Server permissions to use this command"""
 
