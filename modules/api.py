@@ -151,9 +151,19 @@ class API:
                 embed.timestamp = ctx.message.created_at
                 await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.group(aliases=['h'], hidden=True)
+    async def hypixel(self, ctx, username: str):
+        """Shows your Hypixel Stats"""
+        author = ctx.message.author
+        avatar = ctx.message.author.avatar_url
+        e = discord.Embed(title=f"https://hypixel.net/player/{username}/", color=discord.Color.gold())
+        e.set_thumbnail(url=f"https://hypixel.net/player/{username}/")
+        await ctx.send(embed=e)
+
+    @hypixel.command(hidden=True)
     async def uhc(self, ctx, username: str):
-        """Shows your UHC Stats"""
+        """Shows your Hypixel UHC Stats"""
+        pass
 
 def setup(bot):
     bot.add_cog(API(bot))

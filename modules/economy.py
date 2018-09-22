@@ -29,6 +29,19 @@ class Economy:
         await self.bot.db.execute("INSERT INTO economy VALUES (1000, $1);", ctx.author.id)
         await ctx.send(f"Successfully created your account! Your account name is **{name}**, and you will start out with **$1000**. Use `{ctx.prefix}help Economy` for information on commands")
 
+    @commands.command(aliases=['delete'])
+    async def delete_account(self, ctx):
+        """Delete your account from the database"""
+
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", ctx.author.id)
+        if not data:
+            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
+            return
+
+        await self.bot.db.execute("DELETE FROM economy WHERE userid=$1", ctx.author.id)
+        await ctx.send(f"Your account has been deleted! <@{ctx.author.id}>")
+
+
 
     @commands.command(aliases=['w', '$', 'credits', 'bal', 'wallet', 'coins', 'cred', 'money'])
     async def balance(self, ctx, user: discord.User = None):
@@ -37,7 +50,7 @@ class Economy:
         if user is None:
             user = ctx.author
 
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", user.id)
         if not data:
             await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
             return
@@ -160,7 +173,11 @@ class Economy:
     @commands.command(aliases=['find'])
     @commands.cooldown(1, 20, BucketType.user)
     async def search(self, ctx):
-        """Search for money"""
+        """Search for money
+
+        You can search every 20 seconds
+    
+        When searching, you will have a chance to get up to $100 ($1 - $100)"""
 
         amount = randint(1, 100)
 
@@ -201,7 +218,9 @@ class Economy:
 
     @commands.command(aliases=['give'])
     async def transfer(self, ctx, user: discord.User, amount: int):
-        """Transfer an amount of money to someone"""
+        """Transfer an amount of money to someone
+
+        Select a user and transfer them the selected amount of money"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
         if not data:
@@ -228,9 +247,13 @@ class Economy:
             await ctx.send(embed=e)
 
     @commands.command()
-    @commands.cooldown(1, 3600, BucketType.user)
+    @commands.cooldown(1, 3 * 60 * 60, BucketType.user)
     async def rob(self, ctx, user: discord.User, amount: int):
-        """Rob a member for a chance to lose or gain money"""
+        """Rob a member for a chance to lose or gain money
+
+        You can rob every 1 hour
+
+        If it is an unsuccessful rob, you will lose $200"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
         if not data:
@@ -264,7 +287,7 @@ class Economy:
             return 
 
         elif rob < 50:
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance - 200 WHERE userid = {ctx.author.id};", amount)
+            await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", 200)
             await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
             e = discord.Embed(color=16720640)
             e.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
@@ -300,12 +323,14 @@ class Economy:
             seconds = round(seconds, 2)
             hours, remainder = divmod(int(seconds), 3600)
             minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You are on cooldown! Please try again in **{seconds} seconds**")
+            await ctx.send(f"You are on cooldown! Please try again in **{minutes}** minutes and **{seconds} seconds**")
 
     @commands.command(aliases=['day'])
     @commands.cooldown(1, 86400, BucketType.user)
     async def daily(self, ctx):
-        """Collect your daily amount of money"""
+        """Collect your daily amount of money
+
+        You may collect this every day"""
 
         amount = randint(1500, 2500)
 
@@ -335,7 +360,9 @@ class Economy:
     @commands.command(aliases=['hour'])
     @commands.cooldown(1, 86400, BucketType.user)
     async def hourly(self, ctx):
-        """Collect your daily amount of money"""
+        """Collect your daily amount of money
+
+        You can collect this money every hour"""
 
         amount = randint(250, 500)
 
@@ -367,7 +394,7 @@ class Economy:
     async def update(self, ctx, user: discord.User, amount: int):
         """Updates an amount of money from your balance
 
-         You must have Manage Server permission to use this command"""
+         You must have own the bot to use this command"""
 
         data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
         if not data:
@@ -386,7 +413,7 @@ class Economy:
     async def set_amount(self, ctx, user: discord.User, amount: int):
         """Sets an amount of money for a user
 
-        You must have Manage Server permission to use this command"""
+        You must have own the bot to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", user.id)
         if not data:
@@ -403,7 +430,9 @@ class Economy:
     @commands.command(aliases=['subtract'])
     @commands.is_owner()
     async def remove(self, ctx, user: discord.User, amount: int):
-        """Removes an amount of money fror your balance"""
+        """Removes an amount of money fror your balance
+
+        You must own the bot to use this command"""
 
         data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", user.id)
         if not data:
@@ -437,23 +466,28 @@ class Economy:
         embed.set_footer(text=f"Requested by {ctx.author}",icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['flower'], hidden=True)
-    async def plant(self, ctx, flower: str, amount: int):
-        """Plant a hot or cold flower"""
+    @commands.command(aliases=['flower'])
+    async def plant(self, ctx, flower, amount: int):
+        """Plant a hot or cold flower
 
-        available_types = 'hot', 'cold'
+        Hot flowers are: Red, Orange, Yellow
+        Cold flowers are: Blue, Pastel, Purple"""
+
+        flower = flower.lower()
+
+        available_types = 'Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'red', 'yellow', 'orange', 'blue', 'pastel', 'purple'
         if flower not in available_types:
-            raise await ctx.send("Please specify what flower you would like to pick. Choices are: **hot** and **cold**")
+            raise await ctx.send("Please specify what flower you would like to pick. Choices are: red, yellow, orange, blue, pastel and purple")
 
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
+        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", ctx.author.id)
         if not data:
             await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
             return
 
-        flowers = random.choice(['Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'Rainbow'])
-        hotflowers = random.choice(['Red', 'Yellow', 'Orange'])
-        coldflowers = random.choice(['Blue', 'Pastel', 'Purple'])
-        userchoice = random.choice(['hot', 'cold'])
+        flowers = random.choice(['red', 'yellow', 'orange', 'blue', 'pastel', 'purple'])
+        hotflowers = random.choice(['red', 'yellow', 'orange'])
+        coldflowers = random.choice(['blue', 'pastel', 'purple'])
+        userchoice = flower
 
         money = data['balance']
 
@@ -468,63 +502,46 @@ class Economy:
             await ctx.send(embed=em)
             return
 
-        if flowers == 'Red':
+        if flowers == 'red':
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/6/6c/Red_flowers_detail.png/revision/latest?cb=20160918221431"
             flowercolour = 16720640
 
-        elif flowers == 'Orange':
+        elif flowers == 'orange':
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/9/99/Orange_flowers_detail.png/revision/latest?cb=20160918221429"
             flowercolour = discord.Color.orange()
 
-        elif flowers == 'Blue':
+        elif flowers == 'blue':
             flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/d/d6/Blue_flowers_detail.png/revision/latest?cb=20160918221426"
             flowercolour = 0x0042F3
 
-        elif flowers == 'Yellow':
+        elif flowers == 'yellow':
             flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481207196227469333/kriXGoogle.png'
             flowercolour = 0xE9F40B
 
-        elif flowers == 'Pastel':
+        elif flowers == 'pastel':
             flowerurl = 'https://vignette.wikia.nocookie.net/runescape2/images/5/55/Flowers_%28pastel%29_detail.png/revision/latest?cb=20160918221429'
             flowercolour = 0x96A4DA
 
-        elif flowers == 'Purple':
+        elif flowers == 'purple':
             flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481206682437943326/kriXGoogle.png'
             flowercolour = 0x9663F5
 
         if flowers == userchoice:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
+            await self.bot.db.execute("UPDATE economy SET balance=balance+$1*6 WHERE userid=$2;", amount, ctx.author.id)
             e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
+            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*6}**!")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
+            e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
         else: 
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
+            await self.bot.db.execute("UPDATE economy SET balance=balance=$1 WHERE userid=$2;", amount, ctx.author.id)
             e = discord.Embed(color=flowercolour)
             e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
             e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
+            e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
             await ctx.send(embed=e)
             return
-        if flowers != userchoice:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*2}**!")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=e)
-            return  
-        else: 
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=e)
-            return
-
 
 def setup(bot):
     bot.add_cog(Economy(bot))

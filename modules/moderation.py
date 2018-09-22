@@ -113,10 +113,63 @@ class Moderation:
         e.add_field(name=f"Blacklist Removed <:yes:473312268998803466>", value=f"Removed {user.mention} from the blacklisted list. They can now use commands again")
         await ctx.send(embed=e)
 
-    @add.error
-    async def add_error(self, ctx, error):
-        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
+    @commands.group(aliases=['nick'], invoke_without_command=True)
+    @commands.has_permissions(manage_nicknames=True)
+    async def nickname(self, ctx):
+        """This is a subcommand for all commands following nick
 
+        You must have Manage Nicknames permissions to use this command"""
+        pass
+
+    @nickname.command()
+    @commands.has_permissions(manage_nicknames=True)
+    async def set(self, ctx, member: discord.Member, *, nick):
+        """Change the nickname of a member
+
+        Must have Manage Nicknames permission to use the command"""
+
+        await member.edit(nick=nick)
+        e = discord.Embed(color=discord.Color.orange())
+        e.add_field(name="Nick Changed <:yes:473312268998803466>", value=f"**{member}**'s nickname has been changed to **{nick}**!")
+        await ctx.send(embed=e)
+
+    @nickname.command()
+    @commands.has_permissions(manage_nicknames=True)
+    async def reset(self, ctx, *, member: discord.Member):
+        """Reset the nickname of a member
+
+        Must have Manage Nicknames permission to use the command"""
+
+        await member.edit(nick=None)
+        e = discord.Embed(color=discord.Color.orange())
+        e.add_field(name="Nick Reset <:yes:473312268998803466>", value=f"**{member}**'s nickname has been reset!")
+        await ctx.send(embed=e)
+
+    @commands.group(invoke_without_command=True)
+    @commands.has_permissions(manage_guild=True)
+    async def slowmode(self, ctx, seconds="15"):
+        """Activate slowmode in a channel for 'x' number of seconds
+
+        Default amount of seconds are 15
+
+        You must have Manage Server permissions to use this command"""
+
+        await ctx.channel.edit(slowmode_delay=seconds)
+        e = discord.Embed(color=discord.Color.blue())
+        e.add_field(name="Slowmode <:yes:473312268998803466>", value=f"Slowmode has now been activated for **{seconds}** seconds in channel <#{ctx.channel.id}>")
+        await ctx.send(embed=e)
+
+    @slowmode.group()
+    @commands.has_permissions(manage_guild=True)
+    async def reset(self, ctx):
+        """Reset slowmode in a channel
+
+        You must have Manage Server permissions to use this command"""
+
+        await ctx.channel.edit(slowmode_delay=None)
+        e = discord.Embed(color=discord.Color.blue())
+        e.add_field(name="Slowmode Reset <:yes:473312268998803466>", value=f"Slowmode has now been reset in channel <#{ctx.channel.id}>")
+        await ctx.send(embed=e)
 
     @commands.command()
     @commands.guild_only()
@@ -130,6 +183,7 @@ class Moderation:
 
         await ctx.guild.ban(discord.Object(id=member), reason=reason)
         await channel.send(f'**<@{member}>** has been bannned from **{ctx.guild.name}** for **{reason}**')
+
 
     @commands.command()
     @commands.guild_only()

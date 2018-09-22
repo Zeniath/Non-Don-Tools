@@ -117,6 +117,7 @@ class NonBot(commands.Bot):
                 pass
         elif isinstance(error, commands.BadArgument):
             try:
+                self.get_command("rob").reset_cooldown(ctx)
                 e = discord.Embed(title="Error <:no:473312284148498442>", description=f"{str(error)}".capitalize(), color=16720640)
                 return await ctx.send(embed=e, delete_after=10)
             except discord.HTTPException:
@@ -127,7 +128,7 @@ class NonBot(commands.Bot):
                 return await ctx.send(embed=e, delete_after=10)
             except discord.HTTPException:
                 pass
-                
+            
 
 if __name__ == "__main__":
     NonBot().run()

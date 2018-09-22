@@ -139,7 +139,7 @@ class Information:
                                                 f"**Users:** {len(self.bot.users)}\n"
                                                 f"**Version:** 1.0.0a1510+g8ccb98d", inline=False)
         e.add_field(name="PC Stats", value=f"**Python Version:** {python_version()}\n"
-                                            f"**Memory:** {int(p.memory_info()[0]/1024/1024)}mb ({int(p.memory_info()[0]/1024/1024) / 238 * 100})\n"
+                                            f"**Memory:** {int(p.memory_info()[0]/1024/1024)}mb ({round(int(p.memory_info()[0]/1024/1024) / 238 * 100)}%)\n"
                                             f"**CPU:** {psutil.cpu_percent()}%", inline=False)
         await ctx.send(embed=e)
 
