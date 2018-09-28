@@ -165,5 +165,18 @@ class API:
         """Shows your Hypixel UHC Stats"""
         pass
 
+    @commands.command(aliases=['minecraft_skin'])
+    async def mcskin(self, ctx, username):
+        """Looks up your minecraft skin"""
+
+        username = username
+        async with aiohttp.ClientSession() as sessionMojang:
+            async with sessionMojang.get(f"https://api.mojang.com/users/profiles/minecraft/{username}") as rMojang:
+                d = await rMojang.json()
+        e = discord.Embed(title=f"{username}'s Minecraft Skin", color=discord.Color.gold())
+        e.set_image(url=f"https://crafatar.com/avatars/{d['id']}")
+        await ctx.send(embed=e)
+
+
 def setup(bot):
     bot.add_cog(API(bot))

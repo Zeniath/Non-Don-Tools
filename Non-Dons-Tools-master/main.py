@@ -59,7 +59,7 @@ class NonBot(commands.Bot):
                 next_game = 0
             else:
                 next_game += 1
-            await self.change_presence(activity=discord.Activity(name=games[next_game], type = 3))
+            await self.change_presence(activity=discord.Activity(name=games[next_game], type=3))
             await asyncio.sleep(60)
 
     async def on_ready(self):
