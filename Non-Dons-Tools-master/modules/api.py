@@ -169,7 +169,6 @@ class API:
     async def mcskin(self, ctx, username):
         """Looks up your minecraft skin"""
 
-        username = username
         async with aiohttp.ClientSession() as sessionMojang:
             async with sessionMojang.get(f"https://api.mojang.com/users/profiles/minecraft/{username}") as rMojang:
                 d = await rMojang.json()

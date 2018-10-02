@@ -153,7 +153,7 @@ class Moderation:
 
         Default seconds are 15
 
-        You must have Manage Server permissions to use this command"""
+        You must have Manage Channels permissions to use this command"""
 
         await ctx.channel.edit(slowmode_delay=seconds)
         e = discord.Embed(color=discord.Color.blue())
@@ -163,9 +163,9 @@ class Moderation:
     @slowmode.group(aliases=['off', 'o', 'none', '0'])
     @commands.has_permissions(manage_channels=True)
     async def reset(self, ctx):
-        """Reset slowmode in a channel
+        """Turn off slowmode in a channel
 
-        You must have Manage Server permissions to use this command"""
+        You must have Manage Channels permissions to use this command"""
 
         await ctx.channel.edit(slowmode_delay=None)
         e = discord.Embed(color=discord.Color.blue())
@@ -176,7 +176,12 @@ class Moderation:
     @commands.guild_only()
     @checks.has_permissions(ban_members=True)
     async def ban(self, ctx, member: MemberID, *, reason: ActionReason = None):
-        """Bans a member"""
+        """Bans a member from the server
+
+        You must specify the users' ID, @tag, or Username
+
+        It is optional to use a reason for the ban"""
+        
         channel = self.bot.get_channel(448342563980705794)
 
         if reason is None:

@@ -1,553 +1,313 @@
 from discord.ext import commands
-import discord
-import asyncpg
-import random
-import requests
-from .utils import checks
+from discord.ext.commands import clean_content
+import requests, random, json, psutil, aiohttp, asyncio, traceback, discord, inspect, textwrap, io, colorsys
 from random import randint
-from discord.ext.commands.cooldowns import BucketType
+from platform import python_version
+from contextlib import redirect_stdout
+from collections import Counter
 
-class Economy:
-    """Economic Commands"""
+class Fun:
+    """Fun Commands"""
 
     def __init__(self, bot):
         self.bot = bot
-        self._last_result = None
-        self.sessions = set()
 
-    @commands.command(aliases=['create'])
-    async def register(self, ctx, *, name = None):
-        """Register your account"""
+    @commands.command(hidden=True)
+    async def big(self, ctx, text):
+        """Makes your text go big!"""
 
-        if name is None:
-            name = ctx.author.name
+        emoji_dict = {
+            'a': [':a:', ':regional_indicator_a:', ':rice_ball:', ':arrow_up_small:'],
+            'b': [':b:', ':regional_indicator_b:'],
+            'c': [':regional_indicator_c:', '©', ':compression:'],
+            'd': [':regional_indicator_d:', ':leftwards_arrow_with_hook:'],
+            'e': [':regional_indicator_e:', ':three:', ':e_mail:', ':euro:'],
+            'f': [':regional_indicator_f:', ':flags:'],
+            'g': [':regional_indicator_g:', ':compression:', ':six:', ':nine:', ':fuelpump:'],
+            'h': [':regional_indicator_h:', ':pisces:'],
+            'i': [':regional_indicator_i:', ':information_source:', ':mens:', ':one:'],
+            'j': [':regional_indicator_j:', ':japan:'],
+            'k': [':regional_indicator_k:', ':tanabata_tree:'],
+            'l': [':regional_indicator_l:', ':one:', ':regional_indicator_i:', ':boot:', ':pound:'],
+            'm': [':regional_indicator_m:', ':m:', ':chart_with_downwards_trend:'],
+            'n': [':regional_indicator_n:', ':capricorn:', ':musical_note:'],
+            'o': [':regional_indicator_o:', ':o2:', ':zero:', ':o:', ':radio_button:', ':record_button:', ':white_circle:', ':black_circle:', ':large_blue_circle:', ':red_circle:', ':dizzy:'],
+            'p': [':regional_indicator_p:', ':parking:'],
+            'q': [':regional_indicator_q:', ':leo:'],
+            'r': [':regional_indicator_r:', '®'],
+            's': [':regional_indicator_s:', ':heavy_dollar_sign:', ':five:', ':zap:', ':moneybag:', ':dollar:'],
+            't': [':regional_indicator_t:', ':cross:', ':heavy_plus_sign:', ':level_slider:', ':palm_tree:', ':seven:'],
+            'u': [':regional_indicator_u:', ':ophiuchus:', ':dragon:'],
+            'v': [':regional_indicator_v:', ':aries:', ':ballot_box_with_check:'],
+            'w': [':regional_indicator_w:', ':wavy_dash:', ':chart_with_upwards_trend:'],
+            'x': [':regional_indicator_x:', ':negative_squared_cross_mark:', ':heavy_multiplication_x:', ':x:', ':hammer_pick:'],
+            'y': [':regional_indicator_y:', ':v:', ':yen:'],
+            'z': [':regional_indicator_z:', ':two:'],
+            ' ': [':white_small_square:'],
+            '0': [':zero:', ':o2:', ':zero:', ':o:', ':radio_button:', ':record_button:', ':white_circle:', ':black_circle:', ':large_blue_circle:', ':red_circle:', ':dizzy:'],
+            '1': [':one:', ':regional_indicator_i:'],
+            '2': [':two:', ':regional_indicator_z:'],
+            '3': [':three:'],
+            '4': [':four:'],
+            '5': [':five:', ':regional_indicator_s:', ':heavy_dollar_sign:', ':zap:'],
+            '6': [':six:'],
+            '7': [':seven:'],
+            '8': [':eight:', ':8ball:', ':regional_indicator_b:', ':b:'],
+            '9': [':nine:'],
+            '?': [':question:'],
+            '!': [':exclamation:', ':grey_exclamation:', ':warning:', ':heart_exclamation:'],
+            'combination': [['cool', ':cool:'],
+                        ['back', ':back:'],
+                        ['soon', ':soon:'],
+                        ['free', ':free:'],
+                        ['end', ':end:'],
+                        ['top', ':top:'],
+                        ['abc', ':abc:'],
+                        ['atm', ':atm:'],
+                        ['new', ':new:'],
+                        ['sos', ':sos:'],
+                        ['100', ':100:'],
+                        ['hundred', ':100:']
+                        ['loo', ':100:'],
+                        ['zzz', ':zzz:'],
+                        ['nz', ':flag_nz:']
+                        ['uk', ':flag_gb:']
+                        ['...', ':speech_balloon:'],
+                        ['ng', ':ng:'],
+                        ['id', ':id:'],
+                        ['vs', ':vs:'],
+                        ['wc', ':wc:'],
+                        ['ab', ':ab:'],
+                        ['cl', ':cl:'],
+                        ['ok', ':ok:'],
+                        ['up', ':up:'],
+                        ['10', ':keycap_ten:'],
+                        ['11', ':pause_button:'],
+                        ['ll', ':pause_button:'],
+                        ['ii', ':pause_button:'],
+                        ['tm', '™'],
+                        ['on', ':on:'],
+                        ['oo', ':koko:'],
+                        ['!?', ':interrobang:'],
+                        ['!!', ':bangbang:'],
+                        ['21', ':date:']]
 
-        data = await self.bot.db.fetchrow("SELECT * FROM economy WHERE userid=$1;", ctx.author.id)
-        if data:
-            await ctx.send("You are already registered!")
-            return
-        await self.bot.db.execute("INSERT INTO economy VALUES (1000, $1);", ctx.author.id)
-        await ctx.send(f"Successfully created your account! Your account name is **{name}**, and you will start out with **$1000**. Use `{ctx.prefix}help Economy` for information on commands")
+                }
 
-    @commands.command(aliases=['delete'])
-    async def delete_account(self, ctx):
-        """Delete your account from the database"""
-
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", ctx.author.id)
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-
-        await self.bot.db.execute("DELETE FROM economy WHERE userid=$1", ctx.author.id)
-        await ctx.send(f"Your account has been deleted! <@{ctx.author.id}>")
-
-
-    @commands.command(aliases=['w', '$', 'credits', 'bal', 'wallet', 'coins', 'cred', 'money'])
-    async def balance(self, ctx, user: discord.User = None):
-        """Shows a users' or your balance"""
-
-        if user is None:
-            user = ctx.author
-
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", user.id)
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-
-        money = data['balance']
-
-        if user != ctx.author:
-            embed = discord.Embed(color=0xF3B800)
-            embed.add_field(name='Money Balance', value=f"**${money}**", inline=True)
-            embed.set_author(name=f"{user.name}'s Wallet", icon_url=user.avatar_url)
-            embed.set_footer(text=f"Requested by {ctx.author.name}", icon_url=ctx.author.avatar_url)
-            embed.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=embed)
+        if text in emoji_dict:
+            return await ctx.message.add_reaction(emoji_dict)
         else:
-            embed = discord.Embed(color=0xF3B800)
-            embed.add_field(name='Money Balance', value=f"**${money}**", inline=True)
-            embed.set_author(name=f"{user.name}'s Wallet", icon_url=user.avatar_url)
-            embed.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=embed)
-
-    @commands.command(name='50x2', aliases=['50'])
-    async def fifty(self, ctx, amount: int):
-        """Gamble your money by 1/100 for 2x your cash
-
-        If you roll > 50, you double your money
-
-        If you roll < 50, you lose your money"""
-
-        result = randint(1, 100)
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        if amount > money:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"You don't have enough money for that bet! You have **${money}**")
-            await ctx.send(embed=em)
-            return
-        elif amount < 100:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"The minimum amount of money you can bet is **$100**")
-            await ctx.send(embed=em)
-            return
-        elif result < 50:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
-            emb = discord.Embed(color=16720640)
-            emb.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            emb.add_field(name="50x2 Dicing", value=f"You have rolled a **{result}** out of **100**, and **did not** win your bet. You have lost **${amount}**")
-            emb.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=emb)
-            return
-        elif result > 50 and result < 99:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=discord.Colour.green())
-            e.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            e.add_field(name="50x2 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*2}**!")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            return
-        elif result == 100:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount*9} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=discord.Colour.green())
-            e.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            e.add_field(name="50x2 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*10}**!")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            return
-
-    @commands.command(name='75x3', aliases=['75'])
-    async def sevenfive(self, ctx, amount: int):
-        """Gamble your money by 1/100 for 3x your cash
-
-        If you roll > 75, you triple your money
-
-        If you roll < 75, you lose your money"""
-
-        result = randint(1, 100)
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        if amount > money:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"You don't have enough money for that bet! You have **${money}**")
-            await ctx.send(embed=em)
-            return
-        elif amount < 100:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"The minimum amount of money you can bet is **$100**")
-            await ctx.send(embed=em)
-            return
-        elif result < 75:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance-{amount} WHERE userid={ctx.author.id};")
-            emb = discord.Embed(color=16720640)
-            emb.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            emb.add_field(name="75x3 Dicing", value=f"You have rolled a **{result}** out of **100**, and **did not** win your bet. You have lost **${amount}**")
-            emb.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=emb)
-            return
-        elif result > 75 and result < 99:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount*2} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=discord.Colour.green())
-            e.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            e.add_field(name="75x3 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*3}**!")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            return
-        elif result == 100:
-            await self.bot.db.execute(f"UPDATE economy SET balance=balance+{amount*9} WHERE userid={ctx.author.id};")
-            e = discord.Embed(color=discord.Colour.green())
-            e.set_author(name=f"{ctx.author.name}'s Bet", icon_url=ctx.author.avatar_url)
-            e.add_field(name="75x3 Dicing", value=f"You have rolled a **{result}** out of **100**, and successfully **won** your bet! You have won **${amount*10}**!")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            return
-
-    @commands.command(aliases=['gamble'])
-    async def bet(self, ctx):
-        """Shows the betting commands"""
-        await ctx.send(f"To bet, use `{ctx.prefix}50x2 <amount>` or `{ctx.prefix}75x3 <amount>`. More help can be found using `{ctx.prefix}help Economy`")
-
-    @commands.command(aliases=['find'])
-    @commands.cooldown(1, 20, BucketType.user)
-    async def search(self, ctx):
-        """Search for money
-
-        You can search every 20 seconds
-
-        When searching, you will have a chance to get up to $100 ($1 - $100)"""
-
-        amount = randint(1, 100)
-
-        possible_responses = [
-            f'You search the rubbish bin and find **${amount}**',
-            f'''You're searching in the back of your garden and notice a **${amount}** note laying around''',
-            f'While walking around the corner of your house, you pick up **${amount}**',
-            f'Whilst entering the nearest pub, you find **${amount}** on the ground',
-            f'While trying to find out how to code, you find a dandy **${amount}**',
-            f'While on the way to the store, you stumble across your friend who gives you **${amount}**',
-            f'During your coding session, you notice there is **${amount}** sitting on your table',
-            f'On the way to work, you buy your friend breakfast. In return, he hands you **${amount}**'
-            ]
-
-        search = random.choice(possible_responses)
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            self.bot.get_command("hourly").reset_cooldown(ctx)
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-
-        money = data['balance']
-
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {ctx.author.id};", amount)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Search <:yes:473312268998803466>", value=search)
-        await ctx.send(embed=e)
-
-    @search.error
-    async def search_handler(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            seconds = error.retry_after
-            seconds = round(seconds, 2)
-            hours, remainder = divmod(int(seconds), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You are on cooldown! Please try again in **{seconds} seconds**")
-
-    @commands.command(aliases=['give'])
-    async def transfer(self, ctx, user: discord.User, amount: int):
-        """Transfer an amount of money to someone
-
-        Select a user and transfer them the selected amount of money"""
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
-
-        if amount > money:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"You don't have enough money to transfer that to <@{user.id}>'s Wallet! You have **${amount}**")
-            await ctx.send(embed=em)
-            return
-        elif amount < 100:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"The minimum amount of money you can transfer is **$100**")
-            await ctx.send(embed=em)
-            return
-        elif amount < money:
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", amount)
-            e = discord.Embed(color=discord.Colour.green())
-            e.add_field(name="Transfered <:yes:473312268998803466>", value=f"You have transfered **${amount}** to <@{user.id}>'s Wallet! You now have **${money-amount}** in your wallet, and before had **${money}**")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-
-    @commands.command()
-    @commands.cooldown(1, 3 * 60 * 60, BucketType.user)
-    async def rob(self, ctx, user: discord.User, amount: int):
-        """Rob a member for a chance to lose or gain money
-
-        You can rob every 1 hour
-
-        If it is an unsuccessful rob, you will lose $200"""
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            self.bot.get_command("rob").reset_cooldown(ctx)
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        rob = randint(1, 100)
-
-        usermoney = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
-        user_money = usermoney['balance']
-
-        if amount < 100:
-            self.bot.get_command("rob").reset_cooldown(ctx)
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"The minimum amount of money you can rob is **$100**")
-            await ctx.send(embed=em)
-            return
-        elif user_money < amount:
-            self.bot.get_command("rob").reset_cooldown(ctx)
-            e = discord.Embed(color=16720640)
-            e.add_field(name="Error <:no:473312284148498442>", value=f"<@{user.id}> does not have enough money for you to rob them for **${amount}**. They only have **${user_money}**")
-            await ctx.send(embed=e)
-            return
-        elif user == ctx.author:
-            self.bot.get_command("rob").reset_cooldown(ctx)
-            e = discord.Embed(color=16720640)
-            e.add_field(name="Error <:no:473312284148498442>", value=f"You cannot rob yourself!")
-            await ctx.send(embed=e)
-            return
-
-        elif rob < 50:
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {ctx.author.id};", 200)
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {user.id};", amount)
-            e = discord.Embed(color=16720640)
-            e.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
-            e.add_field(name="Robbing", value=f"You have unsuccessfully robbed <@{user.id}> and lost **${amount}**")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            em = discord.Embed(color=discord.Color.green())
-            em.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
-            em.add_field(name="Robbing", value=f"<@{ctx.author.id}> has unsuccessfully robbed you and you can have their **${amount}**!")
-            em.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await user.send(embed=em)
-            return
-        elif rob > 50:
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {ctx.author.id};", amount)
-            await self.bot.db.execute(f"UPDATE economy SET balance = balance - $1 WHERE userid = {user.id};", amount)
-            e = discord.Embed(color=discord.Color.green())
-            e.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
-            e.add_field(name="Robbing", value=f"You have successfully robbed <@{user.id}> and taken their **${amount}**!")
-            e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await ctx.send(embed=e)
-            em = discord.Embed(color=16720640)
-            em.set_author(name=f"{ctx.author.name}'s Rob", icon_url=ctx.author.avatar_url)
-            em.add_field(name="Robbing", value=f"<@{ctx.author.id}> has successfully robbed you and taken your **${amount}**!")
-            em.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-            await user.send(embed=em)
-            return
-
-    @rob.error
-    async def rob_handler(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            seconds = error.retry_after
-            seconds = round(seconds, 2)
-            hours, remainder = divmod(int(seconds), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You are on cooldown! Please try again in **{minutes}** minutes and **{seconds} seconds**")
-
-    @commands.command(aliases=['day'])
-    @commands.cooldown(1, 86400, BucketType.user)
-    async def daily(self, ctx):
-        """Collect your daily amount of money
-
-        You may collect this every day"""
-
-        amount = randint(1500, 2500)
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            self.bot.get_command("daily").reset_cooldown(ctx)
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-
-        money = data['balance']
-
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid={ctx.author.id};", amount)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Daily <:yes:473312268998803466>", value=f"You have retrieved your **daily** amount of money. You have recieved **${amount}** and has been **added** to your balance")
-        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-        await ctx.send(embed=e)
-
-    @daily.error
-    async def daily_handler(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            seconds = error.retry_after
-            seconds = round(seconds, 2)
-            hours, remainder = divmod(int(seconds), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You are on cooldown! Please try again in **{hours} hours, {minutes} minutes, {seconds} seconds**")
-
-    @commands.command(aliases=['hour'])
-    @commands.cooldown(1, 86400, BucketType.user)
-    async def hourly(self, ctx):
-        """Collect your daily amount of money
-
-        You can collect this money every hour"""
-
-        amount = randint(250, 500)
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={ctx.author.id}")
-        if not data:
-            self.bot.get_command("hourly").reset_cooldown(ctx)
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-
-        money = data['balance']
-
-        await self.bot.db.execute(f"UPDATE economy SET balance = balance + $1 WHERE userid = {ctx.author.id};", amount)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Hourly <:yes:473312268998803466>", value=f"You have retrieved your **hourly** amount of money. You have recieved **${amount}** and has been **added** to your balance")
-        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-        await ctx.send(embed=e)
-
-    @hourly.error
-    async def hourly_handler(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            seconds = error.retry_after
-            seconds = round(seconds, 2)
-            hours, remainder = divmod(int(seconds), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You are on cooldown! Please try again in **{minutes} minutes, {seconds} seconds**")
-
-    @commands.command(aliases=['add'])
-    @commands.is_owner()
-    async def update(self, ctx, user: discord.User, amount: int):
-        """Updates an amount of money from your balance
-
-         You must have own the bot to use this command"""
-
-        data = await self.bot.db.fetchrow(f"SELECT balance FROM economy WHERE userid={user.id}")
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        await self.bot.db.execute("UPDATE economy SET balance = balance + $1 WHERE userid = $2;", amount, ctx.author.id)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Updated <:yes:473312268998803466>", value=f"I have added **${amount}** into <@{user.id}>'s Wallet. They now have **${money+amount}**, and before had **${money}**")
-        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-        await ctx.send(embed=e)
-
-    @commands.command(aliases=['set_money', 'set_bal', 'bal_adjust'])
-    @commands.is_owner()
-    async def set_amount(self, ctx, user: discord.User, amount: int):
-        """Sets an amount of money for a user
-
-        You must have own the bot to use this command"""
-
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1;", user.id)
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        await self.bot.db.execute("UPDATE economy SET balance = 0 + $1 WHERE userid = $2;", amount, user.id)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Set Amount <:yes:473312268998803466>", value=f"<@{user.id}> now has **${amount}** in their wallet, and before had **${money}**")
-        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-        await ctx.send(embed=e)
-
-    @commands.command(aliases=['subtract'])
-    @commands.is_owner()
-    async def remove(self, ctx, user: discord.User, amount: int):
-        """Removes an amount of money fror your balance
-
-        You must own the bot to use this command"""
-
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", user.id)
-        if not data:
-            await ctx.send(f"**{user.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
-        money = data['balance']
-
-        await self.bot.db.execute("UPDATE economy SET balance = balance - $1 WHERE userid = $2;", amount, user.id)
-        e = discord.Embed(color=discord.Color.green())
-        e.add_field(name="Removed <:yes:473312268998803466>", value=f"I have removed **${amount}** from <@{user.id}>'s Wallet. They now have **${money-amount}**, and before had **${money}**")
-        e.set_thumbnail(url="http://www.skillifynow.com/wp-content/uploads/2017/03/money3.jpg")
-        await ctx.send(embed=e)
-
-    @commands.command(aliases=['lb'])
-    async def leaderboard(self, ctx, type="global"):
-        """Shows the Wallet Money leaderboard"""
-
-        available_types = 'global'
-        if type not in available_types:
-            raise await ctx.send("Please specify what leaderboard type you would like to choose. Choices are: **global**")
-
-        lb = await self.bot.db.fetch("SELECT * FROM economy ORDER BY balance DESC LIMIT 15")
-        lbnum = await self.bot.db.fetch("SELECT * FROM economy ORDER BY balance DESC LIMIT 100000;")
-
-        if type == 'global':
-            desc = [f"{a+1}. **{self.bot.get_user(lb[a]['userid'])}** - ${lb[a]['balance']}\n" for a in range(len(lb))]
-
-        embed = discord.Embed(color=discord.Colour.blurple())
-        embed.add_field(name="Global Wallet Money Leaderboard", value=''.join(desc))
-        embed.add_field(name="Total Users:", value=len(lbnum), inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}",icon_url=ctx.author.avatar_url)
+            await ctx.send("An error has occured")
+
+    @commands.command(aliases=['emoj', 'randomemoji', 'emoji'])
+    async def random_emoji(self, ctx, *, emoji: discord.Emoji = None):
+        """Returns a random emoji of all servers the bot is in"""
+
+        embed = discord.Embed(title=emoji.name, colour=discord.Color.blurple())
+        embed.add_field(name='URL to Emoji', value=f'**[Emoji Link]({emoji.url})**')
+        embed.set_thumbnail(url=emoji.url)
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['flower'])
-    async def plant(self, ctx, flower, amount: int):
-        """Plant a hot or cold flower
 
-        Hot flowers are: Red, Orange, Yellow
-        Cold flowers are: Blue, Pastel, Purple"""
+    @commands.command(aliases=['em'])
+    async def embed(self, ctx):
+        """Create a customisable embed"""
 
-        flower = flower.lower()
+        def check(message):
+            return message.author.id == ctx.author.id
 
-        available_types = 'Red', 'Yellow', 'Orange', 'Blue', 'Pastel', 'Purple', 'red', 'yellow', 'orange', 'blue', 'pastel', 'purple'
-        if flower not in available_types:
-            raise await ctx.send("Please specify what flower you would like to pick. Choices are: red, yellow, orange, blue, pastel and purple")
+        await ctx.send("Hey! Here we are going to create a customisable embed! Follow these steps to learn how!"
+                        "\n\nWhat would you like to set the colour as?"
+                        "\nChoices are: **blue**, **dark_blue**, **white**, **blurple**, **red**, **yellow**, **green**, **gold**, **aqua**, and **orange**")
+        msg = await self.bot.wait_for('message', check=check)
 
-        data = await self.bot.db.fetchrow("SELECT balance FROM economy WHERE userid=$1", ctx.author.id)
-        if not data:
-            await ctx.send(f"**{ctx.author.name}** does not have an account! Use the register command `{ctx.prefix}register` to create an account.")
-            return
+        if msg.content == ['exit', 'off', 'no']:
+            return await ctx.send(f"You have exited the customisable embed! To do it again, please type the command `{ctx.prefix}embed`")
 
-        flowers = random.choice(['red', 'yellow', 'orange', 'blue', 'pastel', 'purple'])
-        hotflowers = random.choice(['red', 'yellow', 'orange'])
-        coldflowers = random.choice(['blue', 'pastel', 'purple'])
-        userchoice = flower
+        elif msg.content == 'Blue'.lower():
+            value = 3447003
 
-        money = data['balance']
+        elif msg.content == 'Yellow'.lower():
+            value = 15858191
 
-        if amount > money:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"You don't have enough money for that bet! You have **${money}**")
-            await ctx.send(embed=em)
-            return
-        if amount < 100:
-            em = discord.Embed(color=16720640)
-            em.add_field(name="Error <:no:473312284148498442>", value=f"The minimum amount of money you can bet is **$100**")
-            await ctx.send(embed=em)
-            return
+        elif msg.content == 'Blurple'.lower():
+            value = 7506394
 
-        if flowers == 'red':
-            flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/6/6c/Red_flowers_detail.png/revision/latest?cb=20160918221431"
-            flowercolour = 16720640
+        elif msg.content == 'Dark_blue'.lower():
+            value = 2123412
 
-        elif flowers == 'orange':
-            flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/9/99/Orange_flowers_detail.png/revision/latest?cb=20160918221429"
-            flowercolour = discord.Color.orange()
+        elif msg.content == 'Red'.lower():
+            value = 16720640
 
-        elif flowers == 'blue':
-            flowerurl = "https://vignette.wikia.nocookie.net/runescape2/images/d/d6/Blue_flowers_detail.png/revision/latest?cb=20160918221426"
-            flowercolour = 0x0042F3
+        elif msg.content == 'Orange'.lower():
+            value = 15105570
 
-        elif flowers == 'yellow':
-            flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481207196227469333/kriXGoogle.png'
-            flowercolour = 0xE9F40B
+        elif msg.content == 'Gold'.lower():
+            value = 15844367
 
-        elif flowers == 'pastel':
-            flowerurl = 'https://vignette.wikia.nocookie.net/runescape2/images/5/55/Flowers_%28pastel%29_detail.png/revision/latest?cb=20160918221429'
-            flowercolour = 0x96A4DA
+        elif msg.content == 'Green'.lower():
+            value = 3066993
 
-        elif flowers == 'purple':
-            flowerurl = 'https://cdn.discordapp.com/attachments/381963689470984203/481206682437943326/kriXGoogle.png'
-            flowercolour = 0x9663F5
+        elif msg.content == 'Aqua'.lower():
+            value = 1047261
 
-        if flowers == userchoice:
-            await self.bot.db.execute("UPDATE economy SET balance=balance+$1*6 WHERE userid=$2;", amount, ctx.author.id)
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **correctly**, and won **${amount*6}**!")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=e)
-            return
+        elif msg.content == 'White'.lower():
+            value = 16777215
+
+        elif msg.content != ['Blue', 'Yellow', 'Blurple', 'Dark_blue', 'Red', 'Orange', 'Gold', 'Green', 'Aqua', 'White', 'Exit', 'No', 'Off'.lower()]:
+            return await ctx.send(f"This is an invalid colour! Please use the command `{ctx.prefix}embed` to restart")
+
+        await ctx.send(f"Okay, I set the embed colour as **{msg.content}**")
+
+        await ctx.send("Who would you like to set the author as?")
+        msg1 = await self.bot.wait_for('message', check=check)
+        if msg1.content == ['exit', 'off', 'no']:
+            return await ctx.send(f"You have exited the customisable embed! To do it again, please type the command `{ctx.prefix}embed`")
+        await ctx.send(f"Okay, I set the embed author as **{msg1.content}**")
+
+        await ctx.send("What would you like to set the description as?")
+        msg2 = await self.bot.wait_for('message', check=check)
+        if msg2.content == ['exit', 'off', 'no']:
+            return await ctx.send(f"You have exited the customisable embed! To do it again, please type the command `{ctx.prefix}embed`")
+        await ctx.send(f"Okay, I set the embed description as **{msg2.content}**")
+
+        await ctx.send("What would you like to set the footer as?")
+        msg3 = await self.bot.wait_for('message', check=check)
+        if msg3.content == ['exit', 'off', 'no']:
+            return await ctx.send(f"You have exited the customisable embed! To do it again, please type the command `{ctx.prefix}embed`")
+        await ctx.send(f"Okay, I set the embed footer as **{msg3.content}**\n\nHere is your completed embed!")
+
+        e = discord.Embed(description=f"{msg2.content}", colour=discord.Colour(value=value))
+        e.set_author(name=f"{msg1.content}", icon_url=ctx.author.avatar_url)
+        e.set_footer(text=f"{msg3.content}")
+        await ctx.send(embed=e)
+
+    @embed.error
+    async def embed_handler(self, ctx, error):
+        import traceback; traceback.print_exception(type(error), error, error.__traceback__)
+
+    @commands.command()
+    async def poll(self, ctx, *, question):
+        """Let the community answer a question"""
+
+        values = [int(x * 255) for x in colorsys.hsv_to_rgb(random.random(), 1, 1)]
+        colour = discord.Color.from_rgb(*values)
+
+        e = discord.Embed(color=(colour))
+        e.add_field(name="Poll Question", value=f"{question}")
+        e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.message.author.avatar_url)
+        e.timestamp = ctx.message.created_at
+        msg = await ctx.send(embed=e)
+        await msg.add_reaction(":yes:473312268998803466")
+        await msg.add_reaction(":maybe:473312298312925212")
+        await msg.add_reaction(":no:473312284148498442")
+
+    @commands.command()
+    async def arrest(self, ctx, user: discord.Member=None, *, reason: commands.clean_content=None):
+        """Arrest someone"""
+
+        if user is None:
+            user_arrest = await ctx.send("Who are you trying to arrest?")
+
+            def check(message):
+                return message.author.id == ctx.author.id
+
+            try:
+                arrested = await self.bot.wait_for('message', check=check, timeout=180)
+            except asyncio.TimeoutError:
+                return await user_arrest.delete()
+
+            return await ctx.send(f"**{arrested.clean_content}** has been arrested by **{ctx.author.name}**")
+
+        if user == ctx.author:
+            return await ctx.send("You cannot arrest yourself!")
+        elif reason is None:
+            return await ctx.send(f"**{user.name}** has been arrested by **{ctx.author.name}**")
         else:
-            await self.bot.db.execute("UPDATE economy SET balance=balance=$1 WHERE userid=$2;", amount, ctx.author.id)
-            e = discord.Embed(color=flowercolour)
-            e.add_field(name=f"A {flowers} flower has been drawn!", value=f"You have guessed **incorrectly**, and lost **${amount}**")
-            e.set_thumbnail(url=flowerurl)
-            e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=e)
-            return
+            return await ctx.send(f"**{user.name}** has been arrested by **{ctx.author.name}** for {reason}!")
+
+
+    @commands.command(aliases=['print', 'say'])
+    async def echo(self, ctx, *, content: commands.clean_content):
+        """Repeats what you say"""
+        await ctx.send(content)
+
+    @commands.command(name="8ball", aliases=['8', 'ball', 'ball8'])
+    async def eight_ball(self, ctx, *, question):
+        """Ask the 8ball a question"""
+        possible_responses = [
+            'That is a resounding no', 'It is not looking likely', 'It is quite possible', 'Definitely',
+            'Definitely... not', 'Yes', 'No way', '**Of course!',
+            'I have spoken to the gods... They have said Yes! :smile:',
+            'I have spoken to the gods... They have said No! :rage:', 'Maybe?', 'Not at all!',
+            'Not in a million years.', 'You bet ;)', 'Without a doubt', "It's your decision"
+            ]
+
+        answer = random.choice(possible_responses)
+        user = ctx.author.name
+        values = [int(x * 255) for x in colorsys.hsv_to_rgb(random.random(), 1, 1)]
+        colour = discord.Color.from_rgb(*values)
+        embed = discord.Embed(color=(colour))
+        embed.add_field(name=':question: Question:', value=f"{question}?")
+        embed.add_field(name=":8ball: 8ball:", value=f"{answer}")
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/e/e3/8_ball_icon.svg")
+        embed.set_footer(text=f'Requested by {user}', icon_url=ctx.author.avatar_url)
+        embed.timestamp = ctx.message.created_at
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=['choice'])
+    async def choose(self, ctx, *choice):
+        """Chooses between 2 choices"""
+        r = random.choice(choice)
+        u = ctx.author.name
+        embed = discord.Embed(description=f'The choice is: **{r}**', color=4560431)
+        embed.set_thumbnail(url="https://cdn.shopify.com/s/files/1/1061/1924/products/Thinking_Face_Emoji_large.png?v=1480481060")
+        embed.set_footer(text=f"Requested by {u}", icon_url=ctx.author.avatar_url)
+        embed.timestamp = ctx.message.created_at
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def clap(self, ctx, *, text: commands.clean_content):
+        """Claps some text"""
+        await ctx.send(':clap: '.join(f'{text}'.split()))
+
+    @commands.command(aliases=['coin-flip', 'cf'])
+    async def coinflip(self, ctx):
+        """Flips a coin"""
+        e = discord.Embed(title="""Flips coin... It's heads!""", color=0x00FFFF)
+        e.set_thumbnail(url="https://qph.fs.quoracdn.net/main-qimg-57e97e36918b359f28e86b8cbf567436-c")
+        e.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+        e.timestamp = ctx.message.created_at
+
+        em = discord.Embed(title="""Flips coin... It's tails!""", color=0x00FFFF)
+        em.set_thumbnail(url="https://random-ize.com/coin-flip/us-quarter/us-quarter-back.jpg")
+        em.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+        em.timestamp = ctx.message.created_at
+
+        embeds = [em, e]
+        answer = random.choice(embeds)
+
+        await ctx.send(embed=answer)
+
+    @commands.command(aliases=['roll'])
+    async def dice(self, ctx, n: int = 5):
+        """Rolls a dice from 1 to n"""
+        result = randint(1, n)
+        embed = discord.Embed(description=f':game_die: You rolled the number **{result}**!', color=5703162)
+        embed.set_author(name=f"{ctx.author.name}'s dice roll", icon_url=ctx.author.avatar_url)
+        embed.timestamp = ctx.message.created_at
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=['partay'])
+    async def party(self, ctx):
+        """Has a party!"""
+        await ctx.message.add_reaction('a:partyblob_:471910310077399061')
+        await ctx.message.add_reaction(':feelsgoodman:443685135133704192')
+        await ctx.message.add_reaction(':yay:451178223720595456')
+        await ctx.message.add_reaction(':pepecheer:448231102382080000')
+        await ctx.message.add_reaction(':dab:449375412175241216')
+        await ctx.message.add_reaction(':pepehappy:455840154167541760')
+        await ctx.message.add_reaction('a:partyblob:471910008637095946')
 
 def setup(bot):
-    bot.add_cog(Economy(bot))
+    bot.add_cog(Fun(bot))
